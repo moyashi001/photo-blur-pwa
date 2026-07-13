@@ -15,7 +15,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="BlurFrame">
 
-<link rel="stylesheet" href="style.css?v=1.0.1">
+<link rel="stylesheet" href="style.css?v=1.1.0">
 </head>
 <body>
 
@@ -25,6 +25,17 @@
     <span class="header-title">BlurFrame</span>
     <span class="header-version" id="appVersion"></span>
   </header>
+
+  <section class="aspect-bar">
+    <label class="options-label" for="aspectSelect">アスペクト比</label>
+    <select id="aspectSelect" class="aspect-select">
+      <option value="1:1">1:1（正方形）</option>
+      <option value="4:3">4:3</option>
+      <option value="3:2">3:2</option>
+      <option value="16:9">16:9</option>
+      <option value="9:16">9:16（縦長）</option>
+    </select>
+  </section>
 
   <main class="preview-wrap">
     <div class="preview-frame" id="previewFrame">
@@ -42,6 +53,20 @@
       <div class="toast" id="toast" hidden></div>
     </div>
   </main>
+
+  <section class="tool-bar">
+    <div class="mode-toggle" role="group" aria-label="操作モード">
+      <button type="button" id="modeMoveBtn" class="mode-btn active" data-mode="move">移動・拡大縮小</button>
+      <button type="button" id="modeBrushBtn" class="mode-btn" data-mode="brush">ぼかしペン</button>
+    </div>
+    <div class="brush-options" id="brushOptions" hidden>
+      <div class="options-row">
+        <span class="options-label">ブラシサイズ</span>
+        <span class="options-value" id="brushSizeValue">20px</span>
+      </div>
+      <input type="range" id="brushSizeRange" class="blur-range" min="5" max="60" step="1" value="20">
+    </div>
+  </section>
 
   <section class="options">
     <div class="options-row">
@@ -70,6 +95,6 @@
 
 </div>
 
-<script src="main.js?v=1.0.1"></script>
+<script src="main.js?v=1.1.0"></script>
 </body>
 </html>

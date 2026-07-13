@@ -59,6 +59,65 @@ body {
   letter-spacing: 0.01em;
 }
 
+/* Aspect ratio bar */
+.aspect-bar {
+  flex: none;
+  padding: 10px 20px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.aspect-select {
+  flex: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  background: #f7f6f4;
+  border: 1.5px solid rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
+  padding: 6px 10px;
+  font-family: inherit;
+}
+
+/* Tool bar (mode toggle + brush size) */
+.tool-bar {
+  flex: none;
+  padding: 10px 20px 0;
+}
+
+.mode-toggle {
+  display: flex;
+  gap: 8px;
+  background: #f7f6f4;
+  border-radius: 12px;
+  padding: 4px;
+}
+
+.mode-btn {
+  flex: 1;
+  border: none;
+  background: transparent;
+  border-radius: 9px;
+  padding: 8px 6px;
+  font-size: 12.5px;
+  font-weight: 700;
+  font-family: inherit;
+  color: rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+}
+
+.mode-btn.active {
+  background: #fff;
+  color: var(--accent);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+.brush-options {
+  margin-top: 10px;
+}
+
 /* Preview area */
 .preview-wrap {
   flex: 1;
@@ -66,13 +125,11 @@ body {
   padding: 16px;
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 
 .preview-frame {
-  flex: 1;
   position: relative;
-  width: 100%;
-  aspect-ratio: 1 / 1;
   border-radius: 20px;
   overflow: hidden;
   background: #f7f6f4;
@@ -90,6 +147,7 @@ body {
   width: 100%;
   height: 100%;
   display: none;
+  touch-action: none;
 }
 
 .preview-frame.has-image .preview-canvas {

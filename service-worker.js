@@ -1,7 +1,7 @@
 // 最低限のオフラインキャッシュを提供するサービスワーカー
 // 常に最新のファイルを優先し、オフライン時のみキャッシュにフォールバックする(network-first)
 
-const CACHE_NAME = 'blurframe-cache-v3';
+const CACHE_NAME = 'blurframe-cache-v4';
 const APP_SHELL = [
   './',
   './index.html',
