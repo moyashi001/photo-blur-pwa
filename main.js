@@ -105,9 +105,22 @@ function drawBlurredBackground(img, w, h) {
   const dx = (w - dw) / 2;
   const dy = (h - dh) / 2;
 
+  // ctx.filter の blur() は Safari/一部ブラウザで効かないことがあるため、
+  // 縮小してから拡大描画する方式でぼかしを再現する（blur=0なら等倍で描画）
+  const factor = 1 + state.blur * 0.9;
+  const smallW = Math.max(2, Math.round(w / factor));
+  const smallH = Math.max(2, Math.round(h / factor));
+
+  const small = document.createElement('canvas');
+  small.width = smallW;
+  small.height = smallH;
+  const sctx = small.getContext('2d');
+  sctx.drawImage(img, dx / factor, dy / factor, dw / factor, dh / factor);
+
   ctx.save();
-  ctx.filter = `blur(${state.blur}px)`;
-  ctx.drawImage(img, dx, dy, dw, dh);
+  ctx.imageSmoothingEnabled = true;
+  if ('imageSmoothingQuality' in ctx) ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(small, 0, 0, smallW, smallH, 0, 0, w, h);
   ctx.restore();
 }
 
