@@ -1,5 +1,7 @@
 // 写真を縮小して中央に配置し、余白をぼかして加工するアプリのロジック
 
+const APP_VERSION = '1.0.1';
+
 const previewFrame = document.getElementById('previewFrame');
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
@@ -236,4 +238,5 @@ if ('serviceWorker' in navigator) {
 }
 
 // 初期化
+document.getElementById('appVersion').textContent = `v${APP_VERSION}`;
 resizeCanvas();

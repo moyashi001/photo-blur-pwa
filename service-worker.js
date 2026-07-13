@@ -1,11 +1,10 @@
 // 最低限のオフラインキャッシュを提供するサービスワーカー
+// 常に最新のファイルを優先し、オフライン時のみキャッシュにフォールバックする(network-first)
 
-const CACHE_NAME = 'blurframe-cache-v2';
+const CACHE_NAME = 'blurframe-cache-v3';
 const APP_SHELL = [
   './',
   './index.html',
-  './style.css',
-  './main.js',
   './manifest.json',
   './icons/icon-192.png',
   './icons/icon-512.png',
@@ -35,18 +34,14 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached;
-
-      return fetch(event.request)
-        .then((response) => {
-          if (response && response.ok && response.type === 'basic') {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-          }
-          return response;
-        })
-        .catch(() => cached);
-    })
+    fetch(event.request)
+      .then((response) => {
+        if (response && response.ok && response.type === 'basic') {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        }
+        return response;
+      })
+      .catch(() => caches.match(event.request))
   );
 });
