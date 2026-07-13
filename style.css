@@ -87,19 +87,15 @@ body {
   font-family: inherit;
 }
 
-/* AdSense ad slot */
+/* AdSense ad slot（固定サイズ320x50。auto+full-width-responsiveは高さが大きく広がることがあるため使わない） */
 .ad-slot {
   flex: none;
-  min-height: 50px;
-  margin: 12px 20px 0;
+  height: 50px;
+  margin: 12px auto 0;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-}
-
-.ad-slot .adsbygoogle {
-  width: 100%;
 }
 
 /* Tool bar (mode toggle + brush size) */
