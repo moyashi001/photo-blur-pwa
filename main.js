@@ -1,6 +1,6 @@
 // 写真を縮小して中央に配置し、余白をぼかして加工するアプリのロジック
 
-const APP_VERSION = '1.2.1';
+const APP_VERSION = '1.2.2';
 
 const ASPECTS = {
   '1:1': 1,
