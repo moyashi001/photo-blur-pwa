@@ -129,6 +129,10 @@ body {
   margin-top: 10px;
 }
 
+.brush-type-toggle {
+  margin-bottom: 10px;
+}
+
 /* Preview area */
 .preview-wrap {
   flex: 1;

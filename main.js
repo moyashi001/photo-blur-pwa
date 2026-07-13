@@ -1,6 +1,6 @@
 // 写真を縮小して中央に配置し、余白をぼかして加工するアプリのロジック
 
-const APP_VERSION = '1.2.2';
+const APP_VERSION = '1.3.0';
 
 const ASPECTS = {
   '1:1': 1,
@@ -34,6 +34,8 @@ const modeBrushBtn = document.getElementById('modeBrushBtn');
 const brushOptions = document.getElementById('brushOptions');
 const brushSizeRange = document.getElementById('brushSizeRange');
 const brushSizeValue = document.getElementById('brushSizeValue');
+const brushTypeBlurBtn = document.getElementById('brushTypeBlurBtn');
+const brushTypeEraseBtn = document.getElementById('brushTypeEraseBtn');
 
 const selectBtn = document.getElementById('selectBtn');
 const saveBtn = document.getElementById('saveBtn');
@@ -55,6 +57,7 @@ const state = {
   scale: 1,
   mode: 'move', // 'move' | 'brush'
   brushSize: Number(brushSizeRange.value),
+  brushMode: 'blur', // 'blur'(なぞりぼかし) | 'erase'(消しゴムブラシ)
 };
 
 let toastTimer = null;
@@ -101,10 +104,7 @@ function setRenderMode(mode) {
   state.offsetX = 0;
   state.offsetY = 0;
   state.scale = 1;
-
-  // なぞりぼかし(ぼかしペン)は元画像ぼかしモードでのみ使用できる
-  modeBrushBtn.disabled = mode === 'background';
-  if (mode === 'background' && state.mode === 'brush') setMode('move');
+  // ぼかしペン(ぼかしブラシ/消しゴムブラシ)はどちらのモードでも使用できる
 
   draw();
 }
@@ -147,6 +147,17 @@ brushSizeRange.addEventListener('input', () => {
   state.brushSize = Number(brushSizeRange.value);
   brushSizeValue.textContent = `${state.brushSize}px`;
 });
+
+// ---- ブラシ種類切り替え（ぼかしブラシ / 消しゴムブラシ） ----
+
+function setBrushType(type) {
+  state.brushMode = type;
+  brushTypeBlurBtn.classList.toggle('active', type === 'blur');
+  brushTypeEraseBtn.classList.toggle('active', type === 'erase');
+}
+
+brushTypeBlurBtn.addEventListener('click', () => setBrushType('blur'));
+brushTypeEraseBtn.addEventListener('click', () => setBrushType('erase'));
 
 // ---- プレビュー枠のサイズ計算（選択中のアスペクト比で最大に収まるサイズにする） ----
 
@@ -200,15 +211,21 @@ function draw() {
   ctx.clearRect(0, 0, w, h);
   if (!img) return;
 
+  renderScene(ctx, img, w, h);
+}
+
+// 現在のstate(モード・ぼかし強度・パン/ズーム)に基づいて1コマ描画する。
+// 消しゴムブラシがブラシ編集を含まない「まっさらな状態」を作るためにも同じ関数を使う
+function renderScene(targetCtx, img, w, h) {
   if (state.renderMode === 'original') {
-    drawOriginalImage(img, w, h);
+    drawOriginalImage(targetCtx, img, w, h);
   } else {
-    drawBlurredBackground(img, w, h);
-    drawForeground(img, w, h);
+    drawBlurredBackground(targetCtx, img, w, h);
+    drawForeground(targetCtx, img, w, h);
   }
 }
 
-function drawBlurredBackground(img, w, h) {
+function drawBlurredBackground(targetCtx, img, w, h) {
   const coverScale = Math.max(w / img.width, h / img.height) * BACKGROUND_OVERSCAN;
   const dw = img.width * coverScale;
   const dh = img.height * coverScale;
@@ -227,18 +244,18 @@ function drawBlurredBackground(img, w, h) {
   const sctx = small.getContext('2d');
   sctx.drawImage(img, dx / factor, dy / factor, dw / factor, dh / factor);
 
-  ctx.save();
-  ctx.imageSmoothingEnabled = true;
-  if ('imageSmoothingQuality' in ctx) ctx.imageSmoothingQuality = 'high';
-  ctx.drawImage(small, 0, 0, smallW, smallH, 0, 0, w, h);
-  ctx.restore();
+  targetCtx.save();
+  targetCtx.imageSmoothingEnabled = true;
+  if ('imageSmoothingQuality' in targetCtx) targetCtx.imageSmoothingQuality = 'high';
+  targetCtx.drawImage(small, 0, 0, smallW, smallH, 0, 0, w, h);
+  targetCtx.restore();
 }
 
 function clampNum(v, min, max) {
   return Math.max(min, Math.min(max, v));
 }
 
-function drawForeground(img, w, h) {
+function drawForeground(targetCtx, img, w, h) {
   const containScale = Math.min(w / img.width, h / img.height) * FOREGROUND_SCALE * state.scale;
   const dw = img.width * containScale;
   const dh = img.height * containScale;
@@ -253,23 +270,23 @@ function drawForeground(img, w, h) {
   const dy = (h - dh) / 2 + state.offsetY;
   const radius = Math.min(dw, dh) * 0.05;
 
-  ctx.save();
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.28)';
-  ctx.shadowBlur = 16;
-  ctx.shadowOffsetY = 6;
-  ctx.fillStyle = '#fff';
-  roundRectPath(ctx, dx, dy, dw, dh, radius);
-  ctx.fill();
-  ctx.restore();
+  targetCtx.save();
+  targetCtx.shadowColor = 'rgba(0, 0, 0, 0.28)';
+  targetCtx.shadowBlur = 16;
+  targetCtx.shadowOffsetY = 6;
+  targetCtx.fillStyle = '#fff';
+  roundRectPath(targetCtx, dx, dy, dw, dh, radius);
+  targetCtx.fill();
+  targetCtx.restore();
 
-  ctx.save();
-  roundRectPath(ctx, dx, dy, dw, dh, radius);
-  ctx.clip();
-  ctx.drawImage(img, dx, dy, dw, dh);
-  ctx.restore();
+  targetCtx.save();
+  roundRectPath(targetCtx, dx, dy, dw, dh, radius);
+  targetCtx.clip();
+  targetCtx.drawImage(img, dx, dy, dw, dh);
+  targetCtx.restore();
 }
 
-function drawOriginalImage(img, w, h) {
+function drawOriginalImage(targetCtx, img, w, h) {
   // 元画像ぼかしモード：トリミングや背景ぼかしは使わず、まず画像全体がキャンバスに収まる
   // 最大サイズ(contain-fit)で表示する。そこからピンチでさらに拡大縮小できる
   const fitScale = Math.min(w / img.width, h / img.height);
@@ -284,7 +301,25 @@ function drawOriginalImage(img, w, h) {
   const dx = (w - dw) / 2 + state.offsetX;
   const dy = (h - dh) / 2 + state.offsetY;
 
-  ctx.drawImage(img, dx, dy, dw, dh);
+  targetCtx.drawImage(img, dx, dy, dw, dh);
+}
+
+// ブラシ編集を含まない、現在のstateだけに基づく「まっさらな」参照フレームを生成する。
+// 消しゴムブラシはここからピクセルを復元することで、パン/ズーム/モードが何であっても
+// 正しい位置のピクセルに戻せる
+function renderCleanFrame() {
+  const dpr = window.devicePixelRatio || 1;
+  const w = canvas.width / dpr;
+  const h = canvas.height / dpr;
+
+  const clean = document.createElement('canvas');
+  clean.width = canvas.width;
+  clean.height = canvas.height;
+  const cleanCtx = clean.getContext('2d');
+  cleanCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  renderScene(cleanCtx, state.image, w, h);
+  return clean;
 }
 
 function roundRectPath(context, x, y, w, h, r) {
@@ -414,7 +449,12 @@ function queueBrushPoint(pos) {
   if (brushRaf) return;
   brushRaf = requestAnimationFrame(() => {
     brushRaf = null;
-    if (pendingBrushPoint) applyBrushBlurAt(pendingBrushPoint.x, pendingBrushPoint.y);
+    if (!pendingBrushPoint) return;
+    if (state.brushMode === 'erase') {
+      applyEraseBrushAt(pendingBrushPoint.x, pendingBrushPoint.y);
+    } else {
+      applyBrushBlurAt(pendingBrushPoint.x, pendingBrushPoint.y);
+    }
   });
 }
 
@@ -466,6 +506,48 @@ function applyBrushBlurAt(cssX, cssY) {
       src[i + 1] = src[i + 1] * (1 - t) + blurredData[i + 1] * t;
       src[i + 2] = src[i + 2] * (1 - t) + blurredData[i + 2] * t;
       src[i + 3] = src[i + 3] * (1 - t) + blurredData[i + 3] * t;
+    }
+  }
+  ctx.putImageData(region, x0, y0);
+}
+
+// ---- なぞった部分のぼかしを消す（消しゴムブラシ） ----
+
+function applyEraseBrushAt(cssX, cssY) {
+  const dpr = window.devicePixelRatio || 1;
+  const r = Math.max(4, Math.round(state.brushSize * dpr));
+  const cx = Math.round(cssX * dpr);
+  const cy = Math.round(cssY * dpr);
+
+  const x0 = clampNum(cx - r, 0, canvas.width);
+  const y0 = clampNum(cy - r, 0, canvas.height);
+  const x1 = clampNum(cx + r, 0, canvas.width);
+  const y1 = clampNum(cy + r, 0, canvas.height);
+  const w = Math.round(x1 - x0);
+  const h = Math.round(y1 - y0);
+  if (w <= 0 || h <= 0) return;
+
+  // ブラシ編集前の状態を再描画し、そこから該当範囲のピクセルを取り出す
+  // (パン・ズーム・アスペクト比・モードが何であっても正しい位置の元ピクセルになる)
+  const clean = renderCleanFrame();
+  const cleanData = clean.getContext('2d').getImageData(x0, y0, w, h).data;
+
+  // getImageDataで現在のピクセルを取得し、円形にフェザリングしながら元の状態と
+  // 合成してputImageDataで書き戻す（ぼかしブラシと同じ合成方法）
+  const region = ctx.getImageData(x0, y0, w, h);
+  const src = region.data;
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const ddx = (x0 + x) - cx;
+      const ddy = (y0 + y) - cy;
+      const dist = Math.sqrt(ddx * ddx + ddy * ddy);
+      const t = clampNum(1 - (dist - r * 0.6) / (r * 0.4), 0, 1);
+      if (t <= 0) continue;
+      const i = (y * w + x) * 4;
+      src[i] = src[i] * (1 - t) + cleanData[i] * t;
+      src[i + 1] = src[i + 1] * (1 - t) + cleanData[i + 1] * t;
+      src[i + 2] = src[i + 2] * (1 - t) + cleanData[i + 2] * t;
+      src[i + 3] = src[i + 3] * (1 - t) + cleanData[i + 3] * t;
     }
   }
   ctx.putImageData(region, x0, y0);
@@ -545,6 +627,5 @@ if ('serviceWorker' in navigator) {
 
 // 初期化
 document.getElementById('appVersion').textContent = `v${APP_VERSION}`;
-modeBrushBtn.disabled = state.renderMode === 'background';
 layoutPreviewFrame();
 resizeCanvas();
