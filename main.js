@@ -1,6 +1,6 @@
 // 写真を縮小して中央に配置し、余白をぼかして加工するアプリのロジック
 
-const APP_VERSION = '1.4.0';
+const APP_VERSION = '1.4.1';
 const APP_NAME = '写真ぼかしスタジオ';
 const FILE_PREFIX = 'photo-blur-studio';
 
