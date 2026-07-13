@@ -1,6 +1,6 @@
 // 写真を縮小して中央に配置し、余白をぼかして加工するアプリのロジック
 
-const APP_VERSION = '1.1.0';
+const APP_VERSION = '1.2.0';
 
 const ASPECTS = {
   '1:1': 1,
@@ -20,6 +20,9 @@ const previewFrame = document.getElementById('previewFrame');
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 const toastEl = document.getElementById('toast');
+
+const renderModeBgBtn = document.getElementById('renderModeBgBtn');
+const renderModeOrigBtn = document.getElementById('renderModeOrigBtn');
 
 const aspectSelect = document.getElementById('aspectSelect');
 
@@ -46,6 +49,7 @@ const state = {
   image: null,
   blur: Number(blurRange.value),
   aspect: aspectSelect.value,
+  renderMode: 'background', // 'background'(縮小+背景ぼかし) | 'original'(原寸+部分ぼかし)
   offsetX: 0,
   offsetY: 0,
   scale: 1,
@@ -87,6 +91,26 @@ function loadImageFile(file) {
   };
   img.src = url;
 }
+
+// ---- ぼかしモード切り替え（背景ぼかしモード / 元画像ぼかしモード） ----
+
+function setRenderMode(mode) {
+  state.renderMode = mode;
+  renderModeBgBtn.classList.toggle('active', mode === 'background');
+  renderModeOrigBtn.classList.toggle('active', mode === 'original');
+  state.offsetX = 0;
+  state.offsetY = 0;
+  state.scale = 1;
+
+  // なぞりぼかし(ぼかしペン)は元画像ぼかしモードでのみ使用できる
+  modeBrushBtn.disabled = mode === 'background';
+  if (mode === 'background' && state.mode === 'brush') setMode('move');
+
+  draw();
+}
+
+renderModeBgBtn.addEventListener('click', () => setRenderMode('background'));
+renderModeOrigBtn.addEventListener('click', () => setRenderMode('original'));
 
 // ---- アスペクト比選択 ----
 
@@ -176,8 +200,12 @@ function draw() {
   ctx.clearRect(0, 0, w, h);
   if (!img) return;
 
-  drawBlurredBackground(img, w, h);
-  drawForeground(img, w, h);
+  if (state.renderMode === 'original') {
+    drawOriginalImage(img, w, h);
+  } else {
+    drawBlurredBackground(img, w, h);
+    drawForeground(img, w, h);
+  }
 }
 
 function drawBlurredBackground(img, w, h) {
@@ -239,6 +267,22 @@ function drawForeground(img, w, h) {
   ctx.clip();
   ctx.drawImage(img, dx, dy, dw, dh);
   ctx.restore();
+}
+
+function drawOriginalImage(img, w, h) {
+  // 元画像ぼかしモード：縮小せず原寸のまま描画する（背景ぼかしは使わない）
+  const dw = img.width * state.scale;
+  const dh = img.height * state.scale;
+
+  const maxOffsetX = Math.max(0, (w + dw) / 2 - MIN_VISIBLE);
+  const maxOffsetY = Math.max(0, (h + dh) / 2 - MIN_VISIBLE);
+  state.offsetX = clampNum(state.offsetX, -maxOffsetX, maxOffsetX);
+  state.offsetY = clampNum(state.offsetY, -maxOffsetY, maxOffsetY);
+
+  const dx = (w - dw) / 2 + state.offsetX;
+  const dy = (h - dh) / 2 + state.offsetY;
+
+  ctx.drawImage(img, dx, dy, dw, dh);
 }
 
 function roundRectPath(context, x, y, w, h, r) {
@@ -499,5 +543,6 @@ if ('serviceWorker' in navigator) {
 
 // 初期化
 document.getElementById('appVersion').textContent = `v${APP_VERSION}`;
+modeBrushBtn.disabled = state.renderMode === 'background';
 layoutPreviewFrame();
 resizeCanvas();

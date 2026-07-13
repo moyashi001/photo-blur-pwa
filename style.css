@@ -59,6 +59,12 @@ body {
   letter-spacing: 0.01em;
 }
 
+/* Render mode bar (background blur / original image) */
+.render-mode-bar {
+  flex: none;
+  padding: 10px 20px 0;
+}
+
 /* Aspect ratio bar */
 .aspect-bar {
   flex: none;
@@ -112,6 +118,11 @@ body {
   background: #fff;
   color: var(--accent);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+.mode-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
 }
 
 .brush-options {

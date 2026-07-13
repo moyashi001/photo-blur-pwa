@@ -15,7 +15,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="BlurFrame">
 
-<link rel="stylesheet" href="style.css?v=1.1.0">
+<link rel="stylesheet" href="style.css?v=1.2.0">
 </head>
 <body>
 
@@ -25,6 +25,13 @@
     <span class="header-title">BlurFrame</span>
     <span class="header-version" id="appVersion"></span>
   </header>
+
+  <section class="render-mode-bar">
+    <div class="mode-toggle" role="group" aria-label="ぼかしモード">
+      <button type="button" id="renderModeBgBtn" class="mode-btn active" data-render-mode="background">背景ぼかしモード</button>
+      <button type="button" id="renderModeOrigBtn" class="mode-btn" data-render-mode="original">元画像ぼかしモード</button>
+    </div>
+  </section>
 
   <section class="aspect-bar">
     <label class="options-label" for="aspectSelect">アスペクト比</label>
@@ -95,6 +102,6 @@
 
 </div>
 
-<script src="main.js?v=1.1.0"></script>
+<script src="main.js?v=1.2.0"></script>
 </body>
 </html>
