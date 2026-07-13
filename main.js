@@ -1,6 +1,12 @@
 // 写真を縮小して中央に配置し、余白をぼかして加工するアプリのロジック
 
-const APP_VERSION = '1.3.1';
+const APP_VERSION = '1.4.0';
+const APP_NAME = '写真ぼかしスタジオ';
+const FILE_PREFIX = 'photo-blur-studio';
+
+// SNSシェア用
+const APP_SHARE_URL = 'https://photo-blur-pwa.vercel.app/';
+const SHARE_MESSAGE = 'このアプリで写真をぼかしました！';
 
 const ASPECTS = {
   '1:1': 1,
@@ -41,6 +47,10 @@ const selectBtn = document.getElementById('selectBtn');
 const saveBtn = document.getElementById('saveBtn');
 const shareBtn = document.getElementById('shareBtn');
 const fileInput = document.getElementById('fileInput');
+
+const shareModalOverlay = document.getElementById('shareModalOverlay');
+const shareModalCloseBtn = document.getElementById('shareModalCloseBtn');
+const shareButtons = document.querySelectorAll('.share-btn');
 
 // 元画像を囲む余白の割合（この分だけ縮小して中央配置する）
 const FOREGROUND_SCALE = 0.82;
@@ -555,6 +565,8 @@ function applyEraseBrushAt(cssX, cssY) {
 
 // ---- 保存 ----
 
+let lastSavedFile = null;
+
 saveBtn.addEventListener('click', () => {
   if (!state.image) return;
   canvas.toBlob((blob) => {
@@ -562,15 +574,19 @@ saveBtn.addEventListener('click', () => {
       showToast('保存に失敗しました');
       return;
     }
+    const filename = `${FILE_PREFIX}-${timestamp()}.png`;
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `blurframe-${timestamp()}.png`;
+    a.download = filename;
     document.body.appendChild(a);
     a.click();
     a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+    lastSavedFile = new File([blob], filename, { type: 'image/png' });
     showToast('保存しました');
+    openShareModal();
   }, 'image/png');
 });
 
@@ -583,11 +599,11 @@ shareBtn.addEventListener('click', () => {
       showToast('共有に失敗しました');
       return;
     }
-    const file = new File([blob], `blurframe-${timestamp()}.png`, { type: 'image/png' });
+    const file = new File([blob], `${FILE_PREFIX}-${timestamp()}.png`, { type: 'image/png' });
 
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
       try {
-        await navigator.share({ files: [file], title: 'BlurFrame' });
+        await navigator.share({ files: [file], title: APP_NAME });
         showToast('共有しました');
       } catch (err) {
         if (err && err.name !== 'AbortError') showToast('共有に失敗しました');
@@ -597,6 +613,63 @@ shareBtn.addEventListener('click', () => {
     }
   }, 'image/png');
 });
+
+// ---- SNSシェアモーダル ----
+
+function openShareModal() {
+  shareModalOverlay.hidden = false;
+  requestAnimationFrame(() => shareModalOverlay.classList.add('show'));
+}
+
+function closeShareModal() {
+  shareModalOverlay.classList.remove('show');
+  setTimeout(() => { shareModalOverlay.hidden = true; }, 280);
+}
+
+shareModalCloseBtn.addEventListener('click', closeShareModal);
+shareModalOverlay.addEventListener('click', (e) => {
+  if (e.target === shareModalOverlay) closeShareModal();
+});
+
+shareButtons.forEach((btn) => {
+  btn.addEventListener('click', () => shareViaPlatform(btn.dataset.platform));
+});
+
+async function shareViaPlatform(platform) {
+  // Web Share APIが使える場合は、実際の画像ファイルを渡せるためこちらを優先する
+  if (lastSavedFile && navigator.canShare && navigator.canShare({ files: [lastSavedFile] })) {
+    try {
+      await navigator.share({ files: [lastSavedFile], title: APP_NAME, text: SHARE_MESSAGE });
+      return;
+    } catch (err) {
+      if (err && err.name === 'AbortError') return; // ユーザーがキャンセルした場合はそのまま終了
+      // それ以外の失敗時は下のURLスキームにフォールバックする
+    }
+  }
+
+  if (platform === 'instagram') {
+    copyShareLinkForInstagram();
+    return;
+  }
+
+  const platformUrls = {
+    x: `https://twitter.com/intent/tweet?text=${encodeURIComponent(SHARE_MESSAGE)}&url=${encodeURIComponent(APP_SHARE_URL)}`,
+    line: `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(APP_SHARE_URL)}&text=${encodeURIComponent(SHARE_MESSAGE)}`,
+    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(APP_SHARE_URL)}`,
+  };
+  const url = platformUrls[platform];
+  if (url) window.open(url, '_blank', 'noopener,noreferrer');
+}
+
+async function copyShareLinkForInstagram() {
+  const text = `${SHARE_MESSAGE} ${APP_SHARE_URL}`;
+  try {
+    await navigator.clipboard.writeText(text);
+    showToast('リンクをコピーしました。Instagramのストーリーに貼り付けてください');
+  } catch (err) {
+    showToast('コピーに失敗しました');
+  }
+}
 
 function timestamp() {
   const d = new Date();
@@ -623,6 +696,14 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('service-worker.js').catch(() => {});
   });
+}
+
+// ---- AdSense広告の表示 ----
+// data-ad-client/data-ad-slotがプレースホルダーのままだと審査通過前はエラーになるため握りつぶす
+try {
+  (window.adsbygoogle = window.adsbygoogle || []).push({});
+} catch (err) {
+  // AdSense未設定・読み込み失敗時は広告なしで継続する
 }
 
 // 初期化

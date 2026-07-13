@@ -1,6 +1,6 @@
 {
-  "name": "BlurFrame - 写真ぼかし加工",
-  "short_name": "BlurFrame",
+  "name": "写真ぼかしスタジオ",
+  "short_name": "ぼかしスタジオ",
   "description": "長方形の写真を縮小して中央に配置し、余白をぼかして加工するアプリ",
   "start_url": "./index.html",
   "scope": "./",
