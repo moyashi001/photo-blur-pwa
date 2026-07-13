@@ -1,6 +1,6 @@
 // 写真を縮小して中央に配置し、余白をぼかして加工するアプリのロジック
 
-const APP_VERSION = '1.2.0';
+const APP_VERSION = '1.2.1';
 
 const ASPECTS = {
   '1:1': 1,
@@ -270,9 +270,11 @@ function drawForeground(img, w, h) {
 }
 
 function drawOriginalImage(img, w, h) {
-  // 元画像ぼかしモード：縮小せず原寸のまま描画する（背景ぼかしは使わない）
-  const dw = img.width * state.scale;
-  const dh = img.height * state.scale;
+  // 元画像ぼかしモード：トリミングや背景ぼかしは使わず、まず画像全体がキャンバスに収まる
+  // 最大サイズ(contain-fit)で表示する。そこからピンチでさらに拡大縮小できる
+  const fitScale = Math.min(w / img.width, h / img.height);
+  const dw = img.width * fitScale * state.scale;
+  const dh = img.height * fitScale * state.scale;
 
   const maxOffsetX = Math.max(0, (w + dw) / 2 - MIN_VISIBLE);
   const maxOffsetY = Math.max(0, (h + dh) / 2 - MIN_VISIBLE);
