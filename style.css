@@ -324,6 +324,12 @@ body {
   transition: background 0.25s ease-out;
 }
 
+/* [hidden]と.share-modal-overlayは詳細度が同じで、後勝ちでdisplay:flexが勝ってしまい
+   非表示のはずのモーダルが透明な全画面オーバーレイとして操作を塞いでいた。明示的に上書きする */
+.share-modal-overlay[hidden] {
+  display: none;
+}
+
 .share-modal-overlay.show {
   background: rgba(0, 0, 0, 0.45);
 }
