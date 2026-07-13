@@ -1,6 +1,6 @@
 // 写真を縮小して中央に配置し、余白をぼかして加工するアプリのロジック
 
-const APP_VERSION = '1.3.0';
+const APP_VERSION = '1.3.1';
 
 const ASPECTS = {
   '1:1': 1,
@@ -51,7 +51,7 @@ const state = {
   image: null,
   blur: Number(blurRange.value),
   aspect: aspectSelect.value,
-  renderMode: 'background', // 'background'(縮小+背景ぼかし) | 'original'(原寸+部分ぼかし)
+  renderMode: 'original', // 'original'(画像ぼかしモード：等倍fit+部分ぼかし) | 'background'(背景ぼかしモード：縮小+背景ぼかし)
   offsetX: 0,
   offsetY: 0,
   scale: 1,
@@ -95,7 +95,7 @@ function loadImageFile(file) {
   img.src = url;
 }
 
-// ---- ぼかしモード切り替え（背景ぼかしモード / 元画像ぼかしモード） ----
+// ---- ぼかしモード切り替え（画像ぼかしモード / 背景ぼかしモード） ----
 
 function setRenderMode(mode) {
   state.renderMode = mode;
@@ -287,7 +287,7 @@ function drawForeground(targetCtx, img, w, h) {
 }
 
 function drawOriginalImage(targetCtx, img, w, h) {
-  // 元画像ぼかしモード：トリミングや背景ぼかしは使わず、まず画像全体がキャンバスに収まる
+  // 画像ぼかしモード：トリミングや背景ぼかしは使わず、まず画像全体がキャンバスに収まる
   // 最大サイズ(contain-fit)で表示する。そこからピンチでさらに拡大縮小できる
   const fitScale = Math.min(w / img.width, h / img.height);
   const dw = img.width * fitScale * state.scale;
