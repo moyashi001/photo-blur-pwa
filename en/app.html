@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Photo Blur Studio</title>
+
+<meta name="description" content="Photo Blur Studio - blur your photos and edit them right in your browser">
+<meta name="theme-color" content="#3B6FE0">
+
+<link rel="manifest" href="../manifest.json">
+<link rel="icon" href="../icons/icon-192.png">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Photo Blur">
+
+<link rel="stylesheet" href="../app.css?v=1.6.0">
+</head>
+<body>
+
+<div class="app">
+
+  <header class="header">
+    <span class="header-title">Photo Blur Studio</span>
+    <span class="header-version" id="appVersion"></span>
+    <a href="../app.html" class="lang-switch-btn" aria-label="日本語に切り替え" onclick="try{localStorage.setItem('photoBlurLang','ja')}catch(e){}">JP</a>
+  </header>
+
+  <section class="render-mode-bar">
+    <div class="mode-toggle" role="group" aria-label="Blur mode">
+      <button type="button" id="renderModeOrigBtn" class="mode-btn active" data-render-mode="original">Blur Mode</button>
+      <button type="button" id="renderModeBgBtn" class="mode-btn" data-render-mode="background">Background Blur Mode</button>
+    </div>
+  </section>
+
+  <section class="aspect-bar">
+    <label class="options-label" for="aspectSelect">Aspect Ratio</label>
+    <select id="aspectSelect" class="aspect-select">
+      <option value="1:1">1:1 (Square)</option>
+      <option value="4:3">4:3</option>
+      <option value="3:2">3:2</option>
+      <option value="16:9">16:9</option>
+      <option value="9:16">9:16 (Portrait)</option>
+    </select>
+  </section>
+
+  <main class="preview-wrap">
+    <div class="preview-frame" id="previewFrame">
+      <canvas id="canvas" class="preview-canvas" aria-label="Edited photo preview"></canvas>
+
+      <div class="placeholder" id="placeholder">
+        <svg width="56" height="56" viewBox="0 0 56 56" fill="none" aria-hidden="true">
+          <rect x="4" y="12" width="48" height="36" rx="6" stroke="currentColor" stroke-width="2.2"/>
+          <circle cx="28" cy="30" r="9" stroke="currentColor" stroke-width="2.2"/>
+          <rect x="20" y="6" width="16" height="8" rx="2" stroke="currentColor" stroke-width="2.2"/>
+        </svg>
+        <span>No photo selected</span>
+      </div>
+
+      <div class="toast" id="toast" hidden></div>
+    </div>
+  </main>
+
+  <section class="tool-bar">
+    <div class="mode-toggle" role="group" aria-label="Operation mode">
+      <button type="button" id="modeMoveBtn" class="mode-btn active" data-mode="move">Move & Zoom</button>
+      <button type="button" id="modeBrushBtn" class="mode-btn" data-mode="brush">Blur & Paint</button>
+    </div>
+    <div class="brush-options" id="brushOptions" hidden>
+      <div class="mode-toggle brush-type-toggle" role="group" aria-label="Brush type">
+        <button type="button" id="brushTypeBlurBtn" class="mode-btn active" data-brush-type="blur">Blur Brush</button>
+        <button type="button" id="brushTypeEraseBtn" class="mode-btn" data-brush-type="erase">Eraser Brush</button>
+        <button type="button" id="brushTypePaintBtn" class="mode-btn" data-brush-type="paint">Paint</button>
+      </div>
+
+      <div class="paint-color-options" id="paintColorOptions" hidden>
+        <span class="options-label">Pen Color</span>
+        <div class="color-swatches" role="group" aria-label="Pen color">
+          <button type="button" class="color-swatch active" data-color="#000000" style="--swatch-color:#000000" aria-label="Black"></button>
+          <button type="button" class="color-swatch" data-color="#FFFFFF" style="--swatch-color:#FFFFFF" aria-label="White"></button>
+          <button type="button" class="color-swatch" data-color="#FF0000" style="--swatch-color:#FF0000" aria-label="Red"></button>
+          <button type="button" class="color-swatch" data-color="#007BFF" style="--swatch-color:#007BFF" aria-label="Blue"></button>
+          <button type="button" class="color-swatch" data-color="#FFD400" style="--swatch-color:#FFD400" aria-label="Yellow"></button>
+          <button type="button" class="color-swatch" data-color="#00C853" style="--swatch-color:#00C853" aria-label="Green"></button>
+        </div>
+      </div>
+
+      <div class="options-row">
+        <span class="options-label">Brush Size</span>
+        <span class="options-value" id="brushSizeValue">20px</span>
+      </div>
+      <input type="range" id="brushSizeRange" class="blur-range" min="5" max="60" step="1" value="20">
+    </div>
+  </section>
+
+  <section class="options" id="blurOptions">
+    <div class="options-row">
+      <span class="options-label">Blur Strength</span>
+      <span class="options-value" id="blurValue">20px</span>
+    </div>
+    <input type="range" id="blurRange" class="blur-range" min="0" max="40" step="1" value="20">
+  </section>
+
+  <footer class="button-area">
+    <button type="button" id="selectBtn" class="btn btn-primary">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <rect x="3" y="7" width="18" height="13" rx="2.5" stroke="#fff" stroke-width="2"/>
+        <circle cx="12" cy="13.5" r="3.4" stroke="#fff" stroke-width="2"/>
+        <rect x="8.5" y="4" width="7" height="3.5" rx="1" stroke="#fff" stroke-width="2"/>
+      </svg>
+      Select Photo
+    </button>
+    <button type="button" id="saveBtn" class="btn btn-secondary" disabled>Save</button>
+  </footer>
+
+  <input type="file" id="fileInput" accept="image/*" hidden>
+
+  <!-- SNS share modal (slides up from the bottom after saving) -->
+  <div class="share-modal-overlay" id="shareModalOverlay" hidden>
+    <div class="share-modal" id="shareModal" role="dialog" aria-modal="true" aria-labelledby="shareModalTitle">
+      <div class="share-modal-handle"></div>
+      <h2 class="share-modal-title" id="shareModalTitle">Photo Saved</h2>
+      <p class="share-modal-desc">Share it on social media?</p>
+      <div class="share-modal-buttons">
+        <button type="button" class="share-btn share-btn-x" data-platform="x">
+          <span class="share-btn-icon">X</span>Share on X
+        </button>
+        <button type="button" class="share-btn share-btn-line" data-platform="line">
+          <span class="share-btn-icon">L</span>Send via LINE
+        </button>
+        <button type="button" class="share-btn share-btn-facebook" data-platform="facebook">
+          <span class="share-btn-icon">f</span>Share on Facebook
+        </button>
+        <button type="button" class="share-btn share-btn-instagram" data-platform="instagram">
+          <span class="share-btn-icon">IG</span>Copy link for Instagram Story
+        </button>
+      </div>
+      <button type="button" class="share-modal-close" id="shareModalCloseBtn">Close</button>
+    </div>
+  </div>
+
+</div>
+
+<script src="../main.js?v=1.6.0"></script>
+</body>
+</html>

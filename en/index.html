@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
-<!-- ブラウザ言語による自動切り替え。手動でJP/ENボタンを押した選択はlocalStorageに
-     記憶し、以降は自動判定より優先する(手動選択を自動判定で上書きしないため) -->
+<!-- Auto language switch by browser language. A manual JP/EN choice is remembered
+     in localStorage and takes priority over auto-detection afterwards. -->
 <script>
 (function() {
   var STORAGE_KEY = 'photoBlurLang';
@@ -47,59 +47,59 @@
 })();
 </script>
 
-<title>写真ぼかしスタジオ（Photo Blur PWA）- 写真をかんたんにぼかせる無料アプリ</title>
+<title>Photo Blur Studio - Free Photo Blurring App</title>
 
-<meta name="description" content="写真ぼかしスタジオ（Photo Blur PWA）は、指でなぞるだけで写真をぼかせる無料の画像加工アプリ。顔やナンバープレートを隠したいときに。インストール不要、ブラウザだけで使えます。">
-<meta name="keywords" content="写真ぼかしスタジオ,Photo Blur PWA,写真ぼかし,画像加工,顔隠し,モザイク,無料アプリ,PWA">
+<meta name="description" content="Photo Blur Studio is a free photo editing app that lets you blur photos just by tracing with your finger. Great for hiding faces or license plates. No installation needed — works right in your browser.">
+<meta name="keywords" content="Photo Blur Studio,Photo Blur PWA,photo blur,photo editing,face blur,mosaic,free app,PWA">
 <meta name="theme-color" content="#4A90E2">
-<link rel="canonical" href="https://photo-blur-pwa.vercel.app/">
+<link rel="canonical" href="https://photo-blur-pwa.vercel.app/en/">
 
-<!-- Google Search Console 所有権確認 -->
+<!-- Google Search Console site ownership verification -->
 <meta name="google-site-verification" content="9Onzqie7yMo7JRTfPJ1Yk-BDiDndKuyoSrPPlTuiGYQ" />
 
-<!-- Open Graph（SNS/検索エンジンでのカード表示用） -->
+<!-- Open Graph -->
 <meta property="og:type" content="website">
-<meta property="og:title" content="写真ぼかしスタジオ（Photo Blur PWA）- 写真をかんたんにぼかせる無料アプリ">
-<meta property="og:description" content="指でなぞるだけで写真をぼかせる無料の画像加工アプリ。顔やナンバープレートを隠したいときに。インストール不要、ブラウザだけで使えます。">
-<meta property="og:url" content="https://photo-blur-pwa.vercel.app/">
-<meta property="og:site_name" content="写真ぼかしスタジオ（Photo Blur PWA）">
+<meta property="og:title" content="Photo Blur Studio - Free Photo Blurring App">
+<meta property="og:description" content="A free photo editing app that lets you blur photos just by tracing with your finger. Great for hiding faces or license plates. No installation needed.">
+<meta property="og:url" content="https://photo-blur-pwa.vercel.app/en/">
+<meta property="og:site_name" content="Photo Blur Studio">
 <meta property="og:image" content="https://photo-blur-pwa.vercel.app/icons/icon-512.png">
-<meta property="og:locale" content="ja_JP">
+<meta property="og:locale" content="en_US">
 
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="写真ぼかしスタジオ（Photo Blur PWA）- 写真をかんたんにぼかせる無料アプリ">
-<meta name="twitter:description" content="指でなぞるだけで写真をぼかせる無料の画像加工アプリ。顔やナンバープレートを隠したいときに。">
+<meta name="twitter:title" content="Photo Blur Studio - Free Photo Blurring App">
+<meta name="twitter:description" content="A free photo editing app that lets you blur photos just by tracing with your finger. Great for hiding faces or license plates.">
 <meta name="twitter:image" content="https://photo-blur-pwa.vercel.app/icons/icon-512.png">
 
-<!-- Google AdSense アカウント連携タグ（Publisher IDは後で差し替え） -->
+<!-- Google AdSense account link tag (Publisher ID to be replaced later) -->
 <meta name="google-adsense-account" content="ca-pub-6620740970029865">
 
-<link rel="icon" href="icons/icon-192.png">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="../icons/icon-192.png">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
 
-<link rel="stylesheet" href="style.css?v=1.0.2">
+<link rel="stylesheet" href="../style.css?v=1.0.2">
 
 <!-- Google AdSense -->
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
 
-<!-- 検索エンジン向け構造化データ -->
+<!-- Structured data for search engines -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  "name": "写真ぼかしスタジオ（Photo Blur PWA）",
+  "name": "Photo Blur Studio",
   "alternateName": "Photo Blur PWA",
-  "url": "https://photo-blur-pwa.vercel.app/",
+  "url": "https://photo-blur-pwa.vercel.app/en/",
   "applicationCategory": "PhotoEditingApplication",
   "operatingSystem": "Any",
-  "description": "指でなぞるだけで写真をぼかせる無料の画像加工アプリ。顔やナンバープレートを隠したいときに。インストール不要、ブラウザだけで使えます。",
+  "description": "A free photo editing app that lets you blur photos just by tracing with your finger. Great for hiding faces or license plates. No installation needed.",
   "offers": {
     "@type": "Offer",
     "price": "0",
-    "priceCurrency": "JPY"
+    "priceCurrency": "USD"
   },
-  "inLanguage": "ja"
+  "inLanguage": "en"
 }
 </script>
 </head>
@@ -107,7 +107,7 @@
 
 <div class="lp">
 
-  <a href="en/index.html" class="lang-switch-btn" aria-label="Switch to English" onclick="try{localStorage.setItem('photoBlurLang','en')}catch(e){}">EN</a>
+  <a href="../index.html" class="lang-switch-btn" aria-label="日本語に切り替え" onclick="try{localStorage.setItem('photoBlurLang','ja')}catch(e){}">JP</a>
 
   <!-- 1. HERO -->
   <section class="lp-section hero">
@@ -123,11 +123,11 @@
       </div>
     </div>
 
-    <h1 class="hero-title">写真ぼかしスタジオ<span class="visually-hidden">（Photo Blur PWA）</span></h1>
-    <p class="hero-sub">写真をかんたんにぼかせる無料の画像加工アプリ</p>
+    <h1 class="hero-title">Photo Blur Studio</h1>
+    <p class="hero-sub">Blur your photos easily — a free photo editing app</p>
 
-    <a href="app.html" class="cta-btn">アプリを使う</a>
-    <p class="hero-note">インストール不要・ブラウザだけで使えます</p>
+    <a href="app.html" class="cta-btn">Start Editing</a>
+    <p class="hero-note">No installation needed — works right in your browser</p>
   </section>
 
   <!-- 2. FEATURES -->
@@ -137,8 +137,8 @@
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 3v10a3 3 0 006 0V7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M13 7a2 2 0 014 0v6a6 6 0 01-12 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       </div>
       <div class="feature-body">
-        <h3>なぞるだけでぼかし</h3>
-        <p>指でなぞった部分だけを自然にぼかせます。</p>
+        <h3>Blur by tracing</h3>
+        <p>Blur only the areas you trace with your finger, naturally.</p>
       </div>
     </div>
     <div class="feature-card">
@@ -146,8 +146,8 @@
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="4" y="14" width="3" height="6" fill="currentColor"/><rect x="10.5" y="9" width="3" height="11" fill="currentColor"/><rect x="17" y="4" width="3" height="16" fill="currentColor"/></svg>
       </div>
       <div class="feature-body">
-        <h3>強ぼかし・やわらかぼかし</h3>
-        <p>ぼかしの強さを選べます。</p>
+        <h3>Strong or soft blur</h3>
+        <p>Choose how strong the blur effect is.</p>
       </div>
     </div>
     <div class="feature-card">
@@ -155,8 +155,8 @@
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="3" width="7" height="7" fill="currentColor" opacity="0.9"/><rect x="14" y="3" width="7" height="7" fill="currentColor" opacity="0.4"/><rect x="3" y="14" width="7" height="7" fill="currentColor" opacity="0.4"/><rect x="14" y="14" width="7" height="7" fill="currentColor" opacity="0.9"/></svg>
       </div>
       <div class="feature-body">
-        <h3>モザイク加工</h3>
-        <p>顔・個人情報・ナンバープレートを隠すのに最適。</p>
+        <h3>Mosaic effect</h3>
+        <p>Great for hiding faces, personal info, or license plates.</p>
       </div>
     </div>
     <div class="feature-card">
@@ -164,13 +164,13 @@
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 11V7a4 4 0 018 0v4" stroke="currentColor" stroke-width="2"/></svg>
       </div>
       <div class="feature-body">
-        <h3>完全ローカル処理</h3>
-        <p>写真はサーバーに送られません。プライバシー安全。</p>
+        <h3>Fully on-device</h3>
+        <p>Your photos are never sent to a server. Privacy-safe.</p>
       </div>
     </div>
   </section>
 
-  <!-- 機能紹介セクションの下に広告を配置 -->
+  <!-- AdSense ad placed below the features section -->
   <section class="lp-section ad-section">
     <ins class="adsbygoogle"
          style="display:block"
@@ -190,49 +190,49 @@
       <div class="ba-item">
         <div class="ba-label ba-label-before">BEFORE</div>
         <div class="ba-image">
-          <img src="images/before.png" alt="ぼかし前の街並み写真">
+          <img src="../images/before.png" alt="Street photo before blurring">
         </div>
       </div>
       <div class="ba-item">
         <div class="ba-label ba-label-after">AFTER</div>
         <div class="ba-image">
-          <img src="images/after.png" alt="ぼかし後の街並み写真">
+          <img src="../images/after.png" alt="Street photo after blurring">
         </div>
       </div>
     </div>
-    <p class="ba-note">※すべてスマホ内で処理しています</p>
+    <p class="ba-note">※ All processing happens right on your phone.</p>
   </section>
 
   <!-- 4. HOW TO USE -->
   <section class="lp-section how-to-use">
-    <h2 class="section-title">使い方</h2>
+    <h2 class="section-title">How to Use</h2>
     <div class="step-card">
       <div class="step-num">1</div>
       <div class="step-icon">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="2"/><circle cx="9" cy="11" r="2" stroke="currentColor" stroke-width="2"/><path d="M21 16l-5-4-4 3-3-2-6 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       </div>
-      <span class="step-label">写真を選ぶ</span>
+      <span class="step-label">Select a photo</span>
     </div>
     <div class="step-card">
       <div class="step-num">2</div>
       <div class="step-icon">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 12V5a2 2 0 114 0v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M13 6a2 2 0 014 0v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M17 8a2 2 0 014 0v5a7 7 0 01-14 0v-2.5a2 2 0 114 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       </div>
-      <span class="step-label">指でなぞってぼかす</span>
+      <span class="step-label">Trace with your finger to blur</span>
     </div>
     <div class="step-card">
       <div class="step-num">3</div>
       <div class="step-icon">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 4h11l3 3v13H5V4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><rect x="8" y="4" width="8" height="5" stroke="currentColor" stroke-width="2"/><rect x="8" y="14" width="8" height="5" stroke="currentColor" stroke-width="2"/></svg>
       </div>
-      <span class="step-label">保存する</span>
+      <span class="step-label">Save</span>
     </div>
   </section>
 
   <!-- 5. SNS SHARE -->
   <section class="lp-section sns-share">
-    <h2 class="section-title sns-title">SNSシェア導線</h2>
-    <p class="sns-badge">近日追加</p>
+    <h2 class="section-title sns-title">Social Sharing</h2>
+    <p class="sns-badge">Coming soon</p>
     <div class="sns-icons">
       <div class="sns-icon">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 4l16 16M20 4L4 20" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
@@ -247,58 +247,58 @@
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M14 9h-1.5A1.5 1.5 0 0011 10.5V12h3l-.4 2H11v5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
     </div>
-    <p class="sns-desc">保存後にそのままSNSへ共有できます。</p>
+    <p class="sns-desc">Share straight to social media right after saving.</p>
   </section>
 
   <!-- 6. USE CASES -->
   <section class="lp-section use-cases">
-    <h2 class="section-title">こんな時に</h2>
-    <div class="use-case-item"><span class="dot"></span><span>顔を隠したい</span></div>
-    <div class="use-case-item"><span class="dot"></span><span>子どもの写真を安全に投稿したい</span></div>
-    <div class="use-case-item"><span class="dot"></span><span>車のナンバーを消したい</span></div>
-    <div class="use-case-item"><span class="dot"></span><span>背景だけぼかしてオシャレにしたい</span></div>
-    <div class="use-case-item"><span class="dot"></span><span>仕事の資料の一部を隠したい</span></div>
+    <h2 class="section-title">When to Use It</h2>
+    <div class="use-case-item"><span class="dot"></span><span>Hide a face</span></div>
+    <div class="use-case-item"><span class="dot"></span><span>Post kids' photos safely</span></div>
+    <div class="use-case-item"><span class="dot"></span><span>Blur out a license plate</span></div>
+    <div class="use-case-item"><span class="dot"></span><span>Blur the background for a stylish look</span></div>
+    <div class="use-case-item"><span class="dot"></span><span>Hide part of a work document</span></div>
   </section>
 
   <!-- 7. ROADMAP -->
   <section class="lp-section roadmap">
-    <h2 class="section-title">今後のアップデート予定</h2>
+    <h2 class="section-title">Upcoming Updates</h2>
     <div class="roadmap-item">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#EAF2FD"/><path d="M8 12.5l2.5 2.5L16 9" stroke="#4A90E2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span>動画の短尺ぼかし</span>
+      <span>Short video blurring</span>
     </div>
     <div class="roadmap-item">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#EAF2FD"/><path d="M8 12.5l2.5 2.5L16 9" stroke="#4A90E2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span>自動人物抽出ぼかし</span>
+      <span>Automatic person-detection blur</span>
     </div>
     <div class="roadmap-item">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#EAF2FD"/><path d="M8 12.5l2.5 2.5L16 9" stroke="#4A90E2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span>テキスト追加</span>
+      <span>Add text</span>
     </div>
     <div class="roadmap-item">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#EAF2FD"/><path d="M8 12.5l2.5 2.5L16 9" stroke="#4A90E2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span>フレーム・スタンプ</span>
+      <span>Frames & stickers</span>
     </div>
     <div class="roadmap-item">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#EAF2FD"/><path d="M8 12.5l2.5 2.5L16 9" stroke="#4A90E2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span>高品質保存モード</span>
+      <span>High-quality save mode</span>
     </div>
     <div class="roadmap-item">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#EAF2FD"/><path d="M8 12.5l2.5 2.5L16 9" stroke="#4A90E2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span>英語対応</span>
+      <span>More language support</span>
     </div>
   </section>
 
   <!-- 8. CTA -->
   <section class="lp-section cta-bottom">
-    <a href="app.html" class="cta-btn">アプリを使う</a>
-    <p class="hero-note">インストール不要・無料で使えます</p>
+    <a href="app.html" class="cta-btn">Start Editing</a>
+    <p class="hero-note">No installation needed — free to use</p>
   </section>
 
   <!-- 9. FOOTER -->
   <footer class="lp-footer">
     <p>© Photo Blur PWA</p>
-    <a href="#">プライバシーポリシー</a>
+    <a href="#">Privacy Policy</a>
   </footer>
 
 </div>

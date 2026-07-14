@@ -1,14 +1,43 @@
 // 写真を縮小して中央に配置し、余白をぼかして加工するアプリのロジック
 
-const APP_VERSION = '1.5.0';
-const APP_NAME = '写真ぼかしスタジオ';
+const APP_VERSION = '1.6.0';
+
+// URLが/en/配下かどうかで表示言語を切り替える(index.html/app.htmlは日本語、
+// en/index.html/en/app.htmlは英語のページとして共通のこのファイルを読み込む)
+const IS_EN = window.location.pathname.includes('/en/');
+
+const I18N = {
+  ja: {
+    appName: '写真ぼかしスタジオ',
+    shareUrl: 'https://photo-blur-pwa.vercel.app/',
+    shareHashtags: '#写真ぼかし #PhotoBlurPWA #画像加工',
+    errLoadImage: '画像を読み込めませんでした',
+    errSave: '保存に失敗しました',
+    savedToast: '保存しました',
+    errCopy: 'コピーに失敗しました',
+    copiedToast: 'リンクをコピーしました。Instagramのストーリーに貼り付けてください',
+  },
+  en: {
+    appName: 'Photo Blur Studio',
+    shareUrl: 'https://photo-blur-pwa.vercel.app/en/',
+    shareHashtags: '#PhotoBlur #PhotoBlurPWA #PhotoEditing',
+    errLoadImage: 'Failed to load the image',
+    errSave: 'Failed to save',
+    savedToast: 'Saved',
+    errCopy: 'Failed to copy',
+    copiedToast: 'Link copied. Paste it into your Instagram story.',
+  },
+};
+const T = IS_EN ? I18N.en : I18N.ja;
+
+const APP_NAME = T.appName;
 const FILE_PREFIX = 'photo-blur-studio';
 
 // SNSシェア用
 // navigator.share()はfilesと同時にurlを渡すと多くのブラウザ(特にAndroid)で
 // urlが無視されタイトルしか表示されないため、textにアプリ名+URLをまとめて渡す
-const APP_SHARE_URL = 'https://photo-blur-pwa.vercel.app/';
-const SHARE_HASHTAGS = '#写真ぼかし #PhotoBlurPWA #画像加工';
+const APP_SHARE_URL = T.shareUrl;
+const SHARE_HASHTAGS = T.shareHashtags;
 const SHARE_MESSAGE = `${APP_NAME} ${SHARE_HASHTAGS}`; // URLを含まない文言(X/LINEのtextパラメータ用)
 const SHARE_TEXT = `${SHARE_MESSAGE}\n${APP_SHARE_URL}`; // Web Share API/Instagramコピー用(URL込み)
 
@@ -124,7 +153,7 @@ function loadImageFile(file) {
   };
   img.onerror = () => {
     URL.revokeObjectURL(url);
-    showToast('画像を読み込めませんでした');
+    showToast(T.errLoadImage);
   };
   img.src = url;
 }
@@ -663,7 +692,7 @@ saveBtn.addEventListener('click', () => {
   if (!state.image) return;
   canvas.toBlob(async (blob) => {
     if (!blob) {
-      showToast('保存に失敗しました');
+      showToast(T.errSave);
       return;
     }
     const filename = `${FILE_PREFIX}-${timestamp()}.png`;
@@ -677,10 +706,10 @@ saveBtn.addEventListener('click', () => {
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
       try {
         await navigator.share({ files: [file], title: APP_NAME });
-        showToast('保存しました');
+        showToast(T.savedToast);
         openShareModal();
       } catch (err) {
-        if (err && err.name !== 'AbortError') showToast('保存に失敗しました');
+        if (err && err.name !== 'AbortError') showToast(T.errSave);
         // ユーザーが共有シートをキャンセルした場合は何もしない
       }
       return;
@@ -696,7 +725,7 @@ saveBtn.addEventListener('click', () => {
     a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
 
-    showToast('保存しました');
+    showToast(T.savedToast);
     // ダウンロード直後はブラウザ側の処理でモーダル表示が遅延することがあるため、
     // 少し待ってから表示する
     setTimeout(() => openShareModal(), 300);
@@ -753,9 +782,9 @@ async function shareViaPlatform(platform) {
 async function copyShareLinkForInstagram() {
   try {
     await navigator.clipboard.writeText(SHARE_TEXT);
-    showToast('リンクをコピーしました。Instagramのストーリーに貼り付けてください');
+    showToast(T.copiedToast);
   } catch (err) {
-    showToast('コピーに失敗しました');
+    showToast(T.errCopy);
   }
 }
 
@@ -782,7 +811,10 @@ function showToast(message) {
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('service-worker.js').catch(() => {});
+    // service-worker.jsは常にサイトのルート直下にあるため、en/配下からは
+    // ../を付けて参照する(実URLがルートに解決されるのでscopeもサイト全体になる)
+    const swPath = IS_EN ? '../service-worker.js' : 'service-worker.js';
+    navigator.serviceWorker.register(swPath).catch(() => {});
   });
 }
 
