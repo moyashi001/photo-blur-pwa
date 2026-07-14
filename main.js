@@ -1,6 +1,6 @@
 // 写真を縮小して中央に配置し、余白をぼかして加工するアプリのロジック
 
-const APP_VERSION = '1.4.6';
+const APP_VERSION = '1.4.7';
 const APP_NAME = '写真ぼかしスタジオ';
 const FILE_PREFIX = 'photo-blur-studio';
 
@@ -41,6 +41,10 @@ const brushSizeRange = document.getElementById('brushSizeRange');
 const brushSizeValue = document.getElementById('brushSizeValue');
 const brushTypeBlurBtn = document.getElementById('brushTypeBlurBtn');
 const brushTypeEraseBtn = document.getElementById('brushTypeEraseBtn');
+const brushTypePaintBtn = document.getElementById('brushTypePaintBtn');
+const paintColorOptions = document.getElementById('paintColorOptions');
+const colorSwatches = document.querySelectorAll('.color-swatch');
+const blurOptions = document.getElementById('blurOptions');
 
 const selectBtn = document.getElementById('selectBtn');
 const saveBtn = document.getElementById('saveBtn');
@@ -66,11 +70,14 @@ const state = {
   scale: 1,
   mode: 'move', // 'move' | 'brush'
   brushSize: Number(brushSizeRange.value),
-  brushMode: 'blur', // 'blur'(なぞりぼかし) | 'erase'(消しゴムブラシ)
+  brushMode: 'blur', // 'blur'(なぞりぼかし) | 'erase'(消しゴムブラシ) | 'paint'(塗りつぶしペン)
+  paintColor: '#000000',
   // ブラシで加えたぼかし/消しゴム編集は、画像そのものの座標系(image.width x image.height)の
   // マスクとして保持する。パン・ズーム・ぼかし強度変更のたびに全体を再描画しても、
   // マスクは画像に固定されているため編集内容が消えない
   editMask: null,
+  // ペイントで塗った線も同じ理由で画像座標系のレイヤーとして保持する
+  paintLayer: null,
   blurredFullCache: { strength: null, canvas: null },
   compositeCache: { canvas: null, dirty: true },
 };
@@ -100,6 +107,9 @@ function loadImageFile(file) {
     state.editMask = document.createElement('canvas');
     state.editMask.width = img.width;
     state.editMask.height = img.height;
+    state.paintLayer = document.createElement('canvas');
+    state.paintLayer.width = img.width;
+    state.paintLayer.height = img.height;
     state.blurredFullCache = { strength: null, canvas: null };
     state.compositeCache = { canvas: null, dirty: true };
     previewFrame.classList.add('has-image');
@@ -173,16 +183,31 @@ brushSizeRange.addEventListener('input', () => {
   brushSizeValue.textContent = `${state.brushSize}px`;
 });
 
-// ---- ブラシ種類切り替え（ぼかしブラシ / 消しゴムブラシ） ----
+// ---- ブラシ種類切り替え（ぼかしブラシ / 消しゴムブラシ / ペイント） ----
 
 function setBrushType(type) {
   state.brushMode = type;
   brushTypeBlurBtn.classList.toggle('active', type === 'blur');
   brushTypeEraseBtn.classList.toggle('active', type === 'erase');
+  brushTypePaintBtn.classList.toggle('active', type === 'paint');
+  // ペイント選択時のみ色選択UIを表示し、無関係な「ぼかし強度」は隠す
+  paintColorOptions.hidden = type !== 'paint';
+  blurOptions.hidden = type === 'paint';
+  paintLastPoint = null;
 }
 
 brushTypeBlurBtn.addEventListener('click', () => setBrushType('blur'));
 brushTypeEraseBtn.addEventListener('click', () => setBrushType('erase'));
+brushTypePaintBtn.addEventListener('click', () => setBrushType('paint'));
+
+// ---- ペンの色選択 ----
+
+colorSwatches.forEach((btn) => {
+  btn.addEventListener('click', () => {
+    state.paintColor = btn.dataset.color;
+    colorSwatches.forEach((b) => b.classList.toggle('active', b === btn));
+  });
+});
 
 // ---- プレビュー枠のサイズ計算（選択中のアスペクト比で最大に収まるサイズにする） ----
 
@@ -302,6 +327,7 @@ function getCompositeImage() {
   const octx = out.getContext('2d');
   octx.drawImage(img, 0, 0);
   octx.drawImage(masked, 0, 0);
+  octx.drawImage(state.paintLayer, 0, 0); // ペイントは一番上に重ねる
 
   cache.canvas = out;
   cache.dirty = false;
@@ -424,6 +450,7 @@ canvas.addEventListener('touchstart', (e) => {
   e.preventDefault();
 
   if (state.mode === 'brush') {
+    if (state.brushMode === 'paint') paintLastPoint = null;
     const t = e.touches[0];
     queueBrushPoint(getCanvasPos(t.clientX, t.clientY));
     return;
@@ -465,6 +492,7 @@ function onTouchEnd(e) {
   if (e.touches.length === 0) {
     dragStart = null;
     pinchStart = null;
+    paintLastPoint = null;
   } else if (e.touches.length === 1) {
     const t = e.touches[0];
     dragStart = { x: t.clientX, y: t.clientY, offsetX: state.offsetX, offsetY: state.offsetY };
@@ -479,6 +507,7 @@ canvas.addEventListener('mousedown', (e) => {
   if (!state.image) return;
   if (state.mode === 'brush') {
     mouseMode = 'brush';
+    if (state.brushMode === 'paint') paintLastPoint = null;
     queueBrushPoint(getCanvasPos(e.clientX, e.clientY));
     return;
   }
@@ -502,6 +531,7 @@ window.addEventListener('mousemove', (e) => {
 window.addEventListener('mouseup', () => {
   mouseMode = null;
   dragStart = null;
+  paintLastPoint = null;
 });
 
 // ---- なぞった部分をぼかす（ブラシぼかし） ----
@@ -517,6 +547,8 @@ function queueBrushPoint(pos) {
     if (!pendingBrushPoint) return;
     if (state.brushMode === 'erase') {
       applyEraseBrushAt(pendingBrushPoint.x, pendingBrushPoint.y);
+    } else if (state.brushMode === 'paint') {
+      applyPaintAt(pendingBrushPoint.x, pendingBrushPoint.y);
     } else {
       applyBrushBlurAt(pendingBrushPoint.x, pendingBrushPoint.y);
     }
@@ -565,6 +597,55 @@ function applyBrushBlurAt(cssX, cssY) {
 
 function applyEraseBrushAt(cssX, cssY) {
   paintBrushOnMask(cssX, cssY, 'destination-out');
+}
+
+// ---- 塗りつぶし（ペイント）----
+
+// なぞりの軌跡を線としてつなぐため、直前になぞった画像座標(image座標系)を覚えておく。
+// なぞり開始時(touchstart/mousedown)や指を離した時にnullへリセットする
+let paintLastPoint = null;
+
+function applyPaintAt(cssX, cssY) {
+  const img = state.image;
+  if (!img || !state.paintLayer) return;
+
+  const dpr = window.devicePixelRatio || 1;
+  const w = canvas.width / dpr;
+  const h = canvas.height / dpr;
+  const t = getActiveForegroundTransform(w, h);
+  if (t.dw <= 0 || t.dh <= 0) return;
+
+  const scaleToImgX = img.width / t.dw;
+  const scaleToImgY = img.height / t.dh;
+  const imgX = (cssX - t.dx) * scaleToImgX;
+  const imgY = (cssY - t.dy) * scaleToImgY;
+  const lineWidthImg = Math.max(2, state.brushSize * scaleToImgX);
+
+  const pctx = state.paintLayer.getContext('2d');
+  pctx.save();
+  pctx.strokeStyle = state.paintColor;
+  pctx.fillStyle = state.paintColor;
+  pctx.lineWidth = lineWidthImg;
+  pctx.lineCap = 'round';
+  pctx.lineJoin = 'round';
+
+  if (paintLastPoint) {
+    pctx.beginPath();
+    pctx.moveTo(paintLastPoint.x, paintLastPoint.y);
+    pctx.lineTo(imgX, imgY);
+    pctx.stroke();
+  } else {
+    // タップしただけでも点が残るよう、最初の1点は円として塗る
+    pctx.beginPath();
+    pctx.arc(imgX, imgY, lineWidthImg / 2, 0, Math.PI * 2);
+    pctx.fill();
+  }
+  pctx.restore();
+
+  paintLastPoint = { x: imgX, y: imgY };
+
+  invalidateComposite();
+  draw();
 }
 
 // ---- 保存 ----

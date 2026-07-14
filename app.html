@@ -15,7 +15,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="ぼかしスタジオ">
 
-<link rel="stylesheet" href="app.css?v=1.4.6">
+<link rel="stylesheet" href="app.css?v=1.4.7">
 </head>
 <body>
 
@@ -70,7 +70,21 @@
       <div class="mode-toggle brush-type-toggle" role="group" aria-label="ブラシ種類">
         <button type="button" id="brushTypeBlurBtn" class="mode-btn active" data-brush-type="blur">ぼかしブラシ</button>
         <button type="button" id="brushTypeEraseBtn" class="mode-btn" data-brush-type="erase">消しゴムブラシ</button>
+        <button type="button" id="brushTypePaintBtn" class="mode-btn" data-brush-type="paint">ペイント</button>
       </div>
+
+      <div class="paint-color-options" id="paintColorOptions" hidden>
+        <span class="options-label">ペンの色</span>
+        <div class="color-swatches" role="group" aria-label="ペンの色">
+          <button type="button" class="color-swatch active" data-color="#000000" style="--swatch-color:#000000" aria-label="黒"></button>
+          <button type="button" class="color-swatch" data-color="#FFFFFF" style="--swatch-color:#FFFFFF" aria-label="白"></button>
+          <button type="button" class="color-swatch" data-color="#FF0000" style="--swatch-color:#FF0000" aria-label="赤"></button>
+          <button type="button" class="color-swatch" data-color="#007BFF" style="--swatch-color:#007BFF" aria-label="青"></button>
+          <button type="button" class="color-swatch" data-color="#FFD400" style="--swatch-color:#FFD400" aria-label="黄色"></button>
+          <button type="button" class="color-swatch" data-color="#00C853" style="--swatch-color:#00C853" aria-label="緑"></button>
+        </div>
+      </div>
+
       <div class="options-row">
         <span class="options-label">ブラシサイズ</span>
         <span class="options-value" id="brushSizeValue">20px</span>
@@ -79,7 +93,7 @@
     </div>
   </section>
 
-  <section class="options">
+  <section class="options" id="blurOptions">
     <div class="options-row">
       <span class="options-label">ぼかし強度</span>
       <span class="options-value" id="blurValue">20px</span>
@@ -130,6 +144,6 @@
 
 </div>
 
-<script src="main.js?v=1.4.6"></script>
+<script src="main.js?v=1.4.7"></script>
 </body>
 </html>
