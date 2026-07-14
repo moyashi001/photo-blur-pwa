@@ -36,7 +36,7 @@ body {
 .header {
   position: relative;
   flex: none;
-  height: 52px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -62,13 +62,13 @@ body {
 /* Render mode bar (background blur / original image) */
 .render-mode-bar {
   flex: none;
-  padding: 10px 20px 0;
+  padding: 6px 16px 0;
 }
 
 /* Aspect ratio bar */
 .aspect-bar {
   flex: none;
-  padding: 10px 20px 0;
+  padding: 6px 16px 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -91,7 +91,7 @@ body {
 .ad-slot {
   flex: none;
   height: 50px;
-  margin: 12px auto 0;
+  margin: 6px auto 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -101,7 +101,7 @@ body {
 /* Tool bar (mode toggle + brush size) */
 .tool-bar {
   flex: none;
-  padding: 10px 20px 0;
+  padding: 6px 16px 0;
 }
 
 .mode-toggle {
@@ -137,18 +137,18 @@ body {
 }
 
 .brush-options {
-  margin-top: 10px;
+  margin-top: 6px;
 }
 
 .brush-type-toggle {
-  margin-bottom: 10px;
+  margin-bottom: 6px;
 }
 
 /* Preview area */
 .preview-wrap {
   flex: 1;
   min-height: 0;
-  padding: 16px;
+  padding: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -226,14 +226,14 @@ body {
 /* Options */
 .options {
   flex: none;
-  padding: 2px 20px 10px;
+  padding: 2px 16px 6px;
 }
 
 .options-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .options-label {
@@ -258,10 +258,10 @@ body {
 /* Buttons */
 .button-area {
   flex: none;
-  padding: 6px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+  padding: 6px 16px calc(12px + env(safe-area-inset-bottom, 0px));
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   border-top: 1px solid var(--border);
 }
 
@@ -275,7 +275,7 @@ body {
 }
 
 .btn-primary {
-  height: 52px;
+  height: 46px;
   background: var(--accent);
   color: #fff;
   display: flex;
@@ -295,7 +295,7 @@ body {
 
 .btn-secondary {
   flex: 1;
-  height: 48px;
+  height: 42px;
   border: 1.5px solid var(--accent);
   background: #fff;
   color: var(--accent);

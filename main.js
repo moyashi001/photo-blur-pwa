@@ -1,12 +1,11 @@
 // 写真を縮小して中央に配置し、余白をぼかして加工するアプリのロジック
 
-const APP_VERSION = '1.4.4';
+const APP_VERSION = '1.4.5';
 const APP_NAME = '写真ぼかしスタジオ';
 const FILE_PREFIX = 'photo-blur-studio';
 
-// SNSシェア用
+// SNSシェア用（文言は付けず、URLのみ共有する）
 const APP_SHARE_URL = 'https://photo-blur-pwa.vercel.app/';
-const SHARE_MESSAGE = 'このアプリで写真をぼかしました！';
 
 const ASPECTS = {
   '1:1': 1,
@@ -68,6 +67,12 @@ const state = {
   mode: 'move', // 'move' | 'brush'
   brushSize: Number(brushSizeRange.value),
   brushMode: 'blur', // 'blur'(なぞりぼかし) | 'erase'(消しゴムブラシ)
+  // ブラシで加えたぼかし/消しゴム編集は、画像そのものの座標系(image.width x image.height)の
+  // マスクとして保持する。パン・ズーム・ぼかし強度変更のたびに全体を再描画しても、
+  // マスクは画像に固定されているため編集内容が消えない
+  editMask: null,
+  blurredFullCache: { strength: null, canvas: null },
+  compositeCache: { canvas: null, dirty: true },
 };
 
 let toastTimer = null;
@@ -92,6 +97,11 @@ function loadImageFile(file) {
     state.offsetX = 0;
     state.offsetY = 0;
     state.scale = 1;
+    state.editMask = document.createElement('canvas');
+    state.editMask.width = img.width;
+    state.editMask.height = img.height;
+    state.blurredFullCache = { strength: null, canvas: null };
+    state.compositeCache = { canvas: null, dirty: true };
     previewFrame.classList.add('has-image');
     saveBtn.disabled = false;
     shareBtn.disabled = false;
@@ -138,8 +148,13 @@ aspectSelect.addEventListener('change', () => {
 blurRange.addEventListener('input', () => {
   state.blur = Number(blurRange.value);
   blurValue.textContent = `${state.blur}px`;
+  invalidateComposite();
   draw();
 });
+
+function invalidateComposite() {
+  state.compositeCache.dirty = true;
+}
 
 // ---- 操作モード切り替え（移動・拡大縮小 / ぼかしペン） ----
 
@@ -221,18 +236,98 @@ function draw() {
   ctx.clearRect(0, 0, w, h);
   if (!img) return;
 
-  renderScene(ctx, img, w, h);
+  renderScene(ctx, w, h);
 }
 
 // 現在のstate(モード・ぼかし強度・パン/ズーム)に基づいて1コマ描画する。
-// 消しゴムブラシがブラシ編集を含まない「まっさらな状態」を作るためにも同じ関数を使う
-function renderScene(targetCtx, img, w, h) {
+// ブラシで加えた編集は画像座標系のマスクとして別途合成されるため、
+// パン/ズーム/ぼかし強度の変更だけではブラシ編集は失われない
+function renderScene(targetCtx, w, h) {
+  const displayImg = getCompositeImage();
   if (state.renderMode === 'original') {
-    drawOriginalImage(targetCtx, img, w, h);
+    drawOriginalImage(targetCtx, displayImg, w, h);
   } else {
-    drawBlurredBackground(targetCtx, img, w, h);
-    drawForeground(targetCtx, img, w, h);
+    drawBlurredBackground(targetCtx, state.image, w, h);
+    drawForeground(targetCtx, displayImg, w, h);
   }
+}
+
+// ぼかし強度に応じて画像全体をぼかした版を作る（image座標系、ブラシのぼかし合成に使う）
+function getBlurredFullImage() {
+  const img = state.image;
+  const cache = state.blurredFullCache;
+  if (cache.canvas && cache.strength === state.blur) return cache.canvas;
+
+  const factor = 1 + state.blur * 0.9;
+  const smallW = Math.max(2, Math.round(img.width / factor));
+  const smallH = Math.max(2, Math.round(img.height / factor));
+  const small = document.createElement('canvas');
+  small.width = smallW;
+  small.height = smallH;
+  const sctx = small.getContext('2d');
+  sctx.drawImage(img, 0, 0, smallW, smallH);
+
+  const full = document.createElement('canvas');
+  full.width = img.width;
+  full.height = img.height;
+  const fctx = full.getContext('2d');
+  fctx.imageSmoothingEnabled = true;
+  if ('imageSmoothingQuality' in fctx) fctx.imageSmoothingQuality = 'high';
+  fctx.drawImage(small, 0, 0, smallW, smallH, 0, 0, img.width, img.height);
+
+  cache.canvas = full;
+  cache.strength = state.blur;
+  return full;
+}
+
+// 元画像に「ぼかし版 × 編集マスク」を重ねた、表示用の合成画像を作る（image座標系）。
+// マスクとぼかし強度が変わっていなければキャッシュを再利用する
+function getCompositeImage() {
+  const img = state.image;
+  const cache = state.compositeCache;
+  if (!cache.dirty && cache.canvas) return cache.canvas;
+
+  const blurredFull = getBlurredFullImage();
+  const masked = document.createElement('canvas');
+  masked.width = img.width;
+  masked.height = img.height;
+  const mctx = masked.getContext('2d');
+  mctx.drawImage(blurredFull, 0, 0);
+  mctx.globalCompositeOperation = 'destination-in';
+  mctx.drawImage(state.editMask, 0, 0);
+
+  const out = document.createElement('canvas');
+  out.width = img.width;
+  out.height = img.height;
+  const octx = out.getContext('2d');
+  octx.drawImage(img, 0, 0);
+  octx.drawImage(masked, 0, 0);
+
+  cache.canvas = out;
+  cache.dirty = false;
+  return out;
+}
+
+// 現在のrenderMode・パン・ズームに基づき、画像をキャンバス上のどこに(dx,dy,dw,dh)で
+// 描画するかを計算する。ブラシ処理での逆変換(canvas座標→画像座標)にも同じ式を使う
+function computeImageTransform(img, w, h, baseScaleFactor) {
+  const fitScale = Math.min(w / img.width, h / img.height) * baseScaleFactor * state.scale;
+  const dw = img.width * fitScale;
+  const dh = img.height * fitScale;
+
+  const maxOffsetX = Math.max(0, (w + dw) / 2 - MIN_VISIBLE);
+  const maxOffsetY = Math.max(0, (h + dh) / 2 - MIN_VISIBLE);
+  state.offsetX = clampNum(state.offsetX, -maxOffsetX, maxOffsetX);
+  state.offsetY = clampNum(state.offsetY, -maxOffsetY, maxOffsetY);
+
+  const dx = (w - dw) / 2 + state.offsetX;
+  const dy = (h - dh) / 2 + state.offsetY;
+  return { dx, dy, dw, dh };
+}
+
+function getActiveForegroundTransform(w, h) {
+  const baseScaleFactor = state.renderMode === 'original' ? 1 : FOREGROUND_SCALE;
+  return computeImageTransform(state.image, w, h, baseScaleFactor);
 }
 
 function drawBlurredBackground(targetCtx, img, w, h) {
@@ -266,18 +361,7 @@ function clampNum(v, min, max) {
 }
 
 function drawForeground(targetCtx, img, w, h) {
-  const containScale = Math.min(w / img.width, h / img.height) * FOREGROUND_SCALE * state.scale;
-  const dw = img.width * containScale;
-  const dh = img.height * containScale;
-
-  // ドラッグ量をクランプし、画像が完全にキャンバス外へ出てしまわないようにする
-  const maxOffsetX = Math.max(0, (w + dw) / 2 - MIN_VISIBLE);
-  const maxOffsetY = Math.max(0, (h + dh) / 2 - MIN_VISIBLE);
-  state.offsetX = clampNum(state.offsetX, -maxOffsetX, maxOffsetX);
-  state.offsetY = clampNum(state.offsetY, -maxOffsetY, maxOffsetY);
-
-  const dx = (w - dw) / 2 + state.offsetX;
-  const dy = (h - dh) / 2 + state.offsetY;
+  const { dx, dy, dw, dh } = computeImageTransform(state.image, w, h, FOREGROUND_SCALE);
   const radius = Math.min(dw, dh) * 0.05;
 
   targetCtx.save();
@@ -299,37 +383,8 @@ function drawForeground(targetCtx, img, w, h) {
 function drawOriginalImage(targetCtx, img, w, h) {
   // 画像ぼかしモード：トリミングや背景ぼかしは使わず、まず画像全体がキャンバスに収まる
   // 最大サイズ(contain-fit)で表示する。そこからピンチでさらに拡大縮小できる
-  const fitScale = Math.min(w / img.width, h / img.height);
-  const dw = img.width * fitScale * state.scale;
-  const dh = img.height * fitScale * state.scale;
-
-  const maxOffsetX = Math.max(0, (w + dw) / 2 - MIN_VISIBLE);
-  const maxOffsetY = Math.max(0, (h + dh) / 2 - MIN_VISIBLE);
-  state.offsetX = clampNum(state.offsetX, -maxOffsetX, maxOffsetX);
-  state.offsetY = clampNum(state.offsetY, -maxOffsetY, maxOffsetY);
-
-  const dx = (w - dw) / 2 + state.offsetX;
-  const dy = (h - dh) / 2 + state.offsetY;
-
+  const { dx, dy, dw, dh } = computeImageTransform(state.image, w, h, 1);
   targetCtx.drawImage(img, dx, dy, dw, dh);
-}
-
-// ブラシ編集を含まない、現在のstateだけに基づく「まっさらな」参照フレームを生成する。
-// 消しゴムブラシはここからピクセルを復元することで、パン/ズーム/モードが何であっても
-// 正しい位置のピクセルに戻せる
-function renderCleanFrame() {
-  const dpr = window.devicePixelRatio || 1;
-  const w = canvas.width / dpr;
-  const h = canvas.height / dpr;
-
-  const clean = document.createElement('canvas');
-  clean.width = canvas.width;
-  clean.height = canvas.height;
-  const cleanCtx = clean.getContext('2d');
-  cleanCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-  renderScene(cleanCtx, state.image, w, h);
-  return clean;
 }
 
 function roundRectPath(context, x, y, w, h, r) {
@@ -468,99 +523,48 @@ function queueBrushPoint(pos) {
   });
 }
 
-function applyBrushBlurAt(cssX, cssY) {
+// ブラシ操作(cssX, cssY)を画像座標系に変換し、editMaskに円形のグラデーションを
+// 指定のcompositeOperationで焼き込む共通処理
+function paintBrushOnMask(cssX, cssY, compositeOperation) {
+  const img = state.image;
+  if (!img || !state.editMask) return;
+
   const dpr = window.devicePixelRatio || 1;
-  const r = Math.max(4, Math.round(state.brushSize * dpr));
-  const cx = Math.round(cssX * dpr);
-  const cy = Math.round(cssY * dpr);
+  const w = canvas.width / dpr;
+  const h = canvas.height / dpr;
+  const t = getActiveForegroundTransform(w, h);
+  if (t.dw <= 0 || t.dh <= 0) return;
 
-  const x0 = clampNum(cx - r, 0, canvas.width);
-  const y0 = clampNum(cy - r, 0, canvas.height);
-  const x1 = clampNum(cx + r, 0, canvas.width);
-  const y1 = clampNum(cy + r, 0, canvas.height);
-  const w = Math.round(x1 - x0);
-  const h = Math.round(y1 - y0);
-  if (w <= 0 || h <= 0) return;
+  const scaleToImgX = img.width / t.dw;
+  const scaleToImgY = img.height / t.dh;
+  const imgX = (cssX - t.dx) * scaleToImgX;
+  const imgY = (cssY - t.dy) * scaleToImgY;
+  const rImg = Math.max(2, state.brushSize * scaleToImgX);
 
-  // この範囲だけを縮小→拡大してぼかし版を作る（既存の「ぼかし強度」スライダーの値を強さとして利用）
-  const strength = clampNum(state.blur, 4, 40);
-  const factor = 1 + strength * 0.5;
-  const smallW = Math.max(2, Math.round(w / factor));
-  const smallH = Math.max(2, Math.round(h / factor));
-  const small = document.createElement('canvas');
-  small.width = smallW;
-  small.height = smallH;
-  small.getContext('2d').drawImage(canvas, x0, y0, w, h, 0, 0, smallW, smallH);
+  const mctx = state.editMask.getContext('2d');
+  mctx.save();
+  mctx.globalCompositeOperation = compositeOperation;
+  const grad = mctx.createRadialGradient(imgX, imgY, rImg * 0.6, imgX, imgY, rImg);
+  grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+  grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+  mctx.fillStyle = grad;
+  mctx.beginPath();
+  mctx.arc(imgX, imgY, rImg, 0, Math.PI * 2);
+  mctx.fill();
+  mctx.restore();
 
-  const blurCanvas = document.createElement('canvas');
-  blurCanvas.width = w;
-  blurCanvas.height = h;
-  const bctx = blurCanvas.getContext('2d');
-  bctx.imageSmoothingEnabled = true;
-  if ('imageSmoothingQuality' in bctx) bctx.imageSmoothingQuality = 'high';
-  bctx.drawImage(small, 0, 0, smallW, smallH, 0, 0, w, h);
+  invalidateComposite();
+  draw();
+}
 
-  // getImageDataで元領域とぼかし版を取得し、円形にフェザリングしながら合成してputImageDataで書き戻す
-  const region = ctx.getImageData(x0, y0, w, h);
-  const blurredData = bctx.getImageData(0, 0, w, h).data;
-  const src = region.data;
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
-      const ddx = (x0 + x) - cx;
-      const ddy = (y0 + y) - cy;
-      const dist = Math.sqrt(ddx * ddx + ddy * ddy);
-      const t = clampNum(1 - (dist - r * 0.6) / (r * 0.4), 0, 1);
-      if (t <= 0) continue;
-      const i = (y * w + x) * 4;
-      src[i] = src[i] * (1 - t) + blurredData[i] * t;
-      src[i + 1] = src[i + 1] * (1 - t) + blurredData[i + 1] * t;
-      src[i + 2] = src[i + 2] * (1 - t) + blurredData[i + 2] * t;
-      src[i + 3] = src[i + 3] * (1 - t) + blurredData[i + 3] * t;
-    }
-  }
-  ctx.putImageData(region, x0, y0);
+function applyBrushBlurAt(cssX, cssY) {
+  paintBrushOnMask(cssX, cssY, 'source-over');
 }
 
 // ---- なぞった部分のぼかしを消す（消しゴムブラシ） ----
 
 function applyEraseBrushAt(cssX, cssY) {
-  const dpr = window.devicePixelRatio || 1;
-  const r = Math.max(4, Math.round(state.brushSize * dpr));
-  const cx = Math.round(cssX * dpr);
-  const cy = Math.round(cssY * dpr);
-
-  const x0 = clampNum(cx - r, 0, canvas.width);
-  const y0 = clampNum(cy - r, 0, canvas.height);
-  const x1 = clampNum(cx + r, 0, canvas.width);
-  const y1 = clampNum(cy + r, 0, canvas.height);
-  const w = Math.round(x1 - x0);
-  const h = Math.round(y1 - y0);
-  if (w <= 0 || h <= 0) return;
-
-  // ブラシ編集前の状態を再描画し、そこから該当範囲のピクセルを取り出す
-  // (パン・ズーム・アスペクト比・モードが何であっても正しい位置の元ピクセルになる)
-  const clean = renderCleanFrame();
-  const cleanData = clean.getContext('2d').getImageData(x0, y0, w, h).data;
-
-  // getImageDataで現在のピクセルを取得し、円形にフェザリングしながら元の状態と
-  // 合成してputImageDataで書き戻す（ぼかしブラシと同じ合成方法）
-  const region = ctx.getImageData(x0, y0, w, h);
-  const src = region.data;
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
-      const ddx = (x0 + x) - cx;
-      const ddy = (y0 + y) - cy;
-      const dist = Math.sqrt(ddx * ddx + ddy * ddy);
-      const t = clampNum(1 - (dist - r * 0.6) / (r * 0.4), 0, 1);
-      if (t <= 0) continue;
-      const i = (y * w + x) * 4;
-      src[i] = src[i] * (1 - t) + cleanData[i] * t;
-      src[i + 1] = src[i + 1] * (1 - t) + cleanData[i + 1] * t;
-      src[i + 2] = src[i + 2] * (1 - t) + cleanData[i + 2] * t;
-      src[i + 3] = src[i + 3] * (1 - t) + cleanData[i + 3] * t;
-    }
-  }
-  ctx.putImageData(region, x0, y0);
+  paintBrushOnMask(cssX, cssY, 'destination-out');
 }
 
 // ---- 保存 ----
@@ -639,7 +643,7 @@ async function shareViaPlatform(platform) {
   // Web Share APIが使える場合は、実際の画像ファイルを渡せるためこちらを優先する
   if (lastSavedFile && navigator.canShare && navigator.canShare({ files: [lastSavedFile] })) {
     try {
-      await navigator.share({ files: [lastSavedFile], title: APP_NAME, text: SHARE_MESSAGE });
+      await navigator.share({ files: [lastSavedFile], title: APP_NAME, url: APP_SHARE_URL });
       return;
     } catch (err) {
       if (err && err.name === 'AbortError') return; // ユーザーがキャンセルした場合はそのまま終了
@@ -653,8 +657,8 @@ async function shareViaPlatform(platform) {
   }
 
   const platformUrls = {
-    x: `https://twitter.com/intent/tweet?text=${encodeURIComponent(SHARE_MESSAGE)}&url=${encodeURIComponent(APP_SHARE_URL)}`,
-    line: `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(APP_SHARE_URL)}&text=${encodeURIComponent(SHARE_MESSAGE)}`,
+    x: `https://twitter.com/intent/tweet?url=${encodeURIComponent(APP_SHARE_URL)}`,
+    line: `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(APP_SHARE_URL)}`,
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(APP_SHARE_URL)}`,
   };
   const url = platformUrls[platform];
@@ -662,9 +666,8 @@ async function shareViaPlatform(platform) {
 }
 
 async function copyShareLinkForInstagram() {
-  const text = `${SHARE_MESSAGE} ${APP_SHARE_URL}`;
   try {
-    await navigator.clipboard.writeText(text);
+    await navigator.clipboard.writeText(APP_SHARE_URL);
     showToast('リンクをコピーしました。Instagramのストーリーに貼り付けてください');
   } catch (err) {
     showToast('コピーに失敗しました');
