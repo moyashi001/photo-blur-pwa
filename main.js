@@ -1,6 +1,6 @@
 // 写真を縮小して中央に配置し、余白をぼかして加工するアプリのロジック
 
-const APP_VERSION = '1.4.8';
+const APP_VERSION = '1.4.9';
 const APP_NAME = '写真ぼかしスタジオ';
 const FILE_PREFIX = 'photo-blur-studio';
 
@@ -53,7 +53,8 @@ const selectBtn = document.getElementById('selectBtn');
 const saveBtn = document.getElementById('saveBtn');
 const fileInput = document.getElementById('fileInput');
 
-const inlineShare = document.getElementById('inlineShare');
+const shareModalOverlay = document.getElementById('shareModalOverlay');
+const shareModalCloseBtn = document.getElementById('shareModalCloseBtn');
 const shareButtons = document.querySelectorAll('.share-btn');
 
 // 元画像を囲む余白の割合（この分だけ縮小して中央配置する）
@@ -115,7 +116,7 @@ function loadImageFile(file) {
     state.compositeCache = { canvas: null, dirty: true };
     previewFrame.classList.add('has-image');
     saveBtn.disabled = false;
-    inlineShare.hidden = true; // 新しい画像を選んだら前の共有ボタンは隠す
+    closeShareModal(); // 新しい画像を選んだら前の共有モーダルは閉じる
     resizeCanvas();
     draw();
   };
@@ -658,12 +659,32 @@ let lastSavedFile = null;
 
 saveBtn.addEventListener('click', () => {
   if (!state.image) return;
-  canvas.toBlob((blob) => {
+  canvas.toBlob(async (blob) => {
     if (!blob) {
       showToast('保存に失敗しました');
       return;
     }
     const filename = `${FILE_PREFIX}-${timestamp()}.png`;
+    const file = new File([blob], filename, { type: 'image/png' });
+    lastSavedFile = file;
+
+    // iPhone等Web Share APIに対応した端末では、<a download>だとブラウザ標準の
+    // 画像プレビュー画面(「表示」)に遷移することがあり、そこにはSNS共有ボタンを
+    // 出せない。共有シートの「写真に保存」を使ってもらう方式を優先することで、
+    // 常にアプリ内に留まったままSNS共有モーダルを出せるようにする
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], title: APP_NAME });
+        showToast('保存しました');
+        openShareModal();
+      } catch (err) {
+        if (err && err.name !== 'AbortError') showToast('保存に失敗しました');
+        // ユーザーが共有シートをキャンセルした場合は何もしない
+      }
+      return;
+    }
+
+    // Web Share API非対応環境向けのフォールバック：従来通りダウンロードする
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -673,17 +694,29 @@ saveBtn.addEventListener('click', () => {
     a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
 
-    lastSavedFile = new File([blob], filename, { type: 'image/png' });
     showToast('保存しました');
-    showInlineShare();
+    // ダウンロード直後はブラウザ側の処理でモーダル表示が遅延することがあるため、
+    // 少し待ってから表示する
+    setTimeout(() => openShareModal(), 300);
   }, 'image/png');
 });
 
-// ---- SNSシェア（保存後に画像の下へ常設ボタンとして表示する） ----
+// ---- SNSシェアモーダル ----
 
-function showInlineShare() {
-  inlineShare.hidden = false;
+function openShareModal() {
+  shareModalOverlay.hidden = false;
+  requestAnimationFrame(() => shareModalOverlay.classList.add('show'));
 }
+
+function closeShareModal() {
+  shareModalOverlay.classList.remove('show');
+  setTimeout(() => { shareModalOverlay.hidden = true; }, 280);
+}
+
+shareModalCloseBtn.addEventListener('click', closeShareModal);
+shareModalOverlay.addEventListener('click', (e) => {
+  if (e.target === shareModalOverlay) closeShareModal();
+});
 
 shareButtons.forEach((btn) => {
   btn.addEventListener('click', () => shareViaPlatform(btn.dataset.platform));
