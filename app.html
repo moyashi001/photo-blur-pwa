@@ -15,7 +15,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="ぼかしスタジオ">
 
-<link rel="stylesheet" href="app.css?v=1.4.7">
+<link rel="stylesheet" href="app.css?v=1.4.8">
 </head>
 <body>
 
@@ -61,10 +61,30 @@
     </div>
   </main>
 
+  <!-- 保存後に画像のすぐ下へ表示するSNS共有ボタン（モーダルではなく常設要素にすることで
+       ダウンロード直後でも確実に表示させる） -->
+  <section class="inline-share" id="inlineShare" hidden>
+    <p class="inline-share-label">保存しました。SNSでシェアする</p>
+    <div class="inline-share-buttons">
+      <button type="button" class="share-btn share-btn-x" data-platform="x" aria-label="Xでシェア">
+        <span class="share-btn-icon">X</span>
+      </button>
+      <button type="button" class="share-btn share-btn-line" data-platform="line" aria-label="LINEで送る">
+        <span class="share-btn-icon">L</span>
+      </button>
+      <button type="button" class="share-btn share-btn-facebook" data-platform="facebook" aria-label="Facebookでシェア">
+        <span class="share-btn-icon">f</span>
+      </button>
+      <button type="button" class="share-btn share-btn-instagram" data-platform="instagram" aria-label="Instagramストーリー用リンクコピー">
+        <span class="share-btn-icon">IG</span>
+      </button>
+    </div>
+  </section>
+
   <section class="tool-bar">
     <div class="mode-toggle" role="group" aria-label="操作モード">
       <button type="button" id="modeMoveBtn" class="mode-btn active" data-mode="move">移動・拡大縮小</button>
-      <button type="button" id="modeBrushBtn" class="mode-btn" data-mode="brush">ぼかしペン</button>
+      <button type="button" id="modeBrushBtn" class="mode-btn" data-mode="brush">ぼかし＆ペイント</button>
     </div>
     <div class="brush-options" id="brushOptions" hidden>
       <div class="mode-toggle brush-type-toggle" role="group" aria-label="ブラシ種類">
@@ -110,40 +130,13 @@
       </svg>
       写真を選ぶ
     </button>
-    <div class="btn-row">
-      <button type="button" id="saveBtn" class="btn btn-secondary" disabled>保存する</button>
-      <button type="button" id="shareBtn" class="btn btn-secondary" disabled>共有する</button>
-    </div>
+    <button type="button" id="saveBtn" class="btn btn-secondary" disabled>保存する</button>
   </footer>
 
   <input type="file" id="fileInput" accept="image/*" hidden>
 
-  <!-- SNSシェアモーダル（保存後に下からスライド表示） -->
-  <div class="share-modal-overlay" id="shareModalOverlay" hidden>
-    <div class="share-modal" id="shareModal" role="dialog" aria-modal="true" aria-labelledby="shareModalTitle">
-      <div class="share-modal-handle"></div>
-      <h2 class="share-modal-title" id="shareModalTitle">写真を保存しました</h2>
-      <p class="share-modal-desc">SNSで共有してみませんか？</p>
-      <div class="share-modal-buttons">
-        <button type="button" class="share-btn share-btn-x" data-platform="x">
-          <span class="share-btn-icon">X</span>Xでシェア
-        </button>
-        <button type="button" class="share-btn share-btn-line" data-platform="line">
-          <span class="share-btn-icon">L</span>LINEで送る
-        </button>
-        <button type="button" class="share-btn share-btn-facebook" data-platform="facebook">
-          <span class="share-btn-icon">f</span>Facebookでシェア
-        </button>
-        <button type="button" class="share-btn share-btn-instagram" data-platform="instagram">
-          <span class="share-btn-icon">IG</span>Instagramストーリー用リンクコピー
-        </button>
-      </div>
-      <button type="button" class="share-modal-close" id="shareModalCloseBtn">閉じる</button>
-    </div>
-  </div>
-
 </div>
 
-<script src="main.js?v=1.4.7"></script>
+<script src="main.js?v=1.4.8"></script>
 </body>
 </html>

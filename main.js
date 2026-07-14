@@ -1,11 +1,14 @@
 // 写真を縮小して中央に配置し、余白をぼかして加工するアプリのロジック
 
-const APP_VERSION = '1.4.7';
+const APP_VERSION = '1.4.8';
 const APP_NAME = '写真ぼかしスタジオ';
 const FILE_PREFIX = 'photo-blur-studio';
 
-// SNSシェア用（文言は付けず、URLのみ共有する）
+// SNSシェア用
+// navigator.share()はfilesと同時にurlを渡すと多くのブラウザ(特にAndroid)で
+// urlが無視されタイトルしか表示されないため、textにアプリ名+URLをまとめて渡す
 const APP_SHARE_URL = 'https://photo-blur-pwa.vercel.app/';
+const SHARE_TEXT = `${APP_NAME}\n${APP_SHARE_URL}`;
 
 const ASPECTS = {
   '1:1': 1,
@@ -48,11 +51,9 @@ const blurOptions = document.getElementById('blurOptions');
 
 const selectBtn = document.getElementById('selectBtn');
 const saveBtn = document.getElementById('saveBtn');
-const shareBtn = document.getElementById('shareBtn');
 const fileInput = document.getElementById('fileInput');
 
-const shareModalOverlay = document.getElementById('shareModalOverlay');
-const shareModalCloseBtn = document.getElementById('shareModalCloseBtn');
+const inlineShare = document.getElementById('inlineShare');
 const shareButtons = document.querySelectorAll('.share-btn');
 
 // 元画像を囲む余白の割合（この分だけ縮小して中央配置する）
@@ -114,7 +115,7 @@ function loadImageFile(file) {
     state.compositeCache = { canvas: null, dirty: true };
     previewFrame.classList.add('has-image');
     saveBtn.disabled = false;
-    shareBtn.disabled = false;
+    inlineShare.hidden = true; // 新しい画像を選んだら前の共有ボタンは隠す
     resizeCanvas();
     draw();
   };
@@ -134,7 +135,7 @@ function setRenderMode(mode) {
   state.offsetX = 0;
   state.offsetY = 0;
   state.scale = 1;
-  // ぼかしペン(ぼかしブラシ/消しゴムブラシ)はどちらのモードでも使用できる
+  // ぼかし＆ペイント(ぼかしブラシ/消しゴムブラシ/ペイント)はどちらのモードでも使用できる
 
   draw();
 }
@@ -555,11 +556,11 @@ function queueBrushPoint(pos) {
   });
 }
 
-// ブラシ操作(cssX, cssY)を画像座標系に変換し、editMaskに円形のグラデーションを
-// 指定のcompositeOperationで焼き込む共通処理
-function paintBrushOnMask(cssX, cssY, compositeOperation) {
+// ブラシ操作(cssX, cssY)を画像座標系に変換し、指定のレイヤーに円形のグラデーションを
+// 指定のcompositeOperationで焼き込む共通処理（副作用(再描画)は呼び出し側の責務にする）
+function paintCircleOnLayer(layer, cssX, cssY, compositeOperation) {
   const img = state.image;
-  if (!img || !state.editMask) return;
+  if (!img || !layer) return;
 
   const dpr = window.devicePixelRatio || 1;
   const w = canvas.width / dpr;
@@ -573,30 +574,33 @@ function paintBrushOnMask(cssX, cssY, compositeOperation) {
   const imgY = (cssY - t.dy) * scaleToImgY;
   const rImg = Math.max(2, state.brushSize * scaleToImgX);
 
-  const mctx = state.editMask.getContext('2d');
-  mctx.save();
-  mctx.globalCompositeOperation = compositeOperation;
-  const grad = mctx.createRadialGradient(imgX, imgY, rImg * 0.6, imgX, imgY, rImg);
+  const lctx = layer.getContext('2d');
+  lctx.save();
+  lctx.globalCompositeOperation = compositeOperation;
+  const grad = lctx.createRadialGradient(imgX, imgY, rImg * 0.6, imgX, imgY, rImg);
   grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
   grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
-  mctx.fillStyle = grad;
-  mctx.beginPath();
-  mctx.arc(imgX, imgY, rImg, 0, Math.PI * 2);
-  mctx.fill();
-  mctx.restore();
+  lctx.fillStyle = grad;
+  lctx.beginPath();
+  lctx.arc(imgX, imgY, rImg, 0, Math.PI * 2);
+  lctx.fill();
+  lctx.restore();
+}
 
+function applyBrushBlurAt(cssX, cssY) {
+  paintCircleOnLayer(state.editMask, cssX, cssY, 'source-over');
   invalidateComposite();
   draw();
 }
 
-function applyBrushBlurAt(cssX, cssY) {
-  paintBrushOnMask(cssX, cssY, 'source-over');
-}
-
-// ---- なぞった部分のぼかしを消す（消しゴムブラシ） ----
-
+// ---- なぞった部分のぼかし/ペイントを消す（消しゴムブラシ） ----
+// ぼかしマスクとペイントレイヤーの両方から同時に消す。これによりどちらで
+// 描いた内容でも同じ消しゴムでなぞって消せる
 function applyEraseBrushAt(cssX, cssY) {
-  paintBrushOnMask(cssX, cssY, 'destination-out');
+  paintCircleOnLayer(state.editMask, cssX, cssY, 'destination-out');
+  paintCircleOnLayer(state.paintLayer, cssX, cssY, 'destination-out');
+  invalidateComposite();
+  draw();
 }
 
 // ---- 塗りつぶし（ペイント）----
@@ -671,50 +675,15 @@ saveBtn.addEventListener('click', () => {
 
     lastSavedFile = new File([blob], filename, { type: 'image/png' });
     showToast('保存しました');
-    openShareModal();
+    showInlineShare();
   }, 'image/png');
 });
 
-// ---- 共有 ----
+// ---- SNSシェア（保存後に画像の下へ常設ボタンとして表示する） ----
 
-shareBtn.addEventListener('click', () => {
-  if (!state.image) return;
-  canvas.toBlob(async (blob) => {
-    if (!blob) {
-      showToast('共有に失敗しました');
-      return;
-    }
-    const file = new File([blob], `${FILE_PREFIX}-${timestamp()}.png`, { type: 'image/png' });
-
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      try {
-        await navigator.share({ files: [file], title: APP_NAME });
-        showToast('共有しました');
-      } catch (err) {
-        if (err && err.name !== 'AbortError') showToast('共有に失敗しました');
-      }
-    } else {
-      showToast('この端末は共有に対応していません');
-    }
-  }, 'image/png');
-});
-
-// ---- SNSシェアモーダル ----
-
-function openShareModal() {
-  shareModalOverlay.hidden = false;
-  requestAnimationFrame(() => shareModalOverlay.classList.add('show'));
+function showInlineShare() {
+  inlineShare.hidden = false;
 }
-
-function closeShareModal() {
-  shareModalOverlay.classList.remove('show');
-  setTimeout(() => { shareModalOverlay.hidden = true; }, 280);
-}
-
-shareModalCloseBtn.addEventListener('click', closeShareModal);
-shareModalOverlay.addEventListener('click', (e) => {
-  if (e.target === shareModalOverlay) closeShareModal();
-});
 
 shareButtons.forEach((btn) => {
   btn.addEventListener('click', () => shareViaPlatform(btn.dataset.platform));
@@ -724,7 +693,7 @@ async function shareViaPlatform(platform) {
   // Web Share APIが使える場合は、実際の画像ファイルを渡せるためこちらを優先する
   if (lastSavedFile && navigator.canShare && navigator.canShare({ files: [lastSavedFile] })) {
     try {
-      await navigator.share({ files: [lastSavedFile], title: APP_NAME, url: APP_SHARE_URL });
+      await navigator.share({ files: [lastSavedFile], title: APP_NAME, text: SHARE_TEXT });
       return;
     } catch (err) {
       if (err && err.name === 'AbortError') return; // ユーザーがキャンセルした場合はそのまま終了
@@ -738,8 +707,8 @@ async function shareViaPlatform(platform) {
   }
 
   const platformUrls = {
-    x: `https://twitter.com/intent/tweet?url=${encodeURIComponent(APP_SHARE_URL)}`,
-    line: `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(APP_SHARE_URL)}`,
+    x: `https://twitter.com/intent/tweet?text=${encodeURIComponent(APP_NAME)}&url=${encodeURIComponent(APP_SHARE_URL)}`,
+    line: `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(APP_SHARE_URL)}&text=${encodeURIComponent(APP_NAME)}`,
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(APP_SHARE_URL)}`,
   };
   const url = platformUrls[platform];
@@ -748,7 +717,7 @@ async function shareViaPlatform(platform) {
 
 async function copyShareLinkForInstagram() {
   try {
-    await navigator.clipboard.writeText(APP_SHARE_URL);
+    await navigator.clipboard.writeText(SHARE_TEXT);
     showToast('リンクをコピーしました。Instagramのストーリーに貼り付けてください');
   } catch (err) {
     showToast('コピーに失敗しました');

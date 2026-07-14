@@ -314,7 +314,8 @@ body {
 }
 
 .btn-secondary {
-  flex: 1;
+  flex: none;
+  width: 100%;
   height: 42px;
   border: 1.5px solid var(--accent);
   background: #fff;
@@ -332,85 +333,35 @@ body {
   cursor: default;
 }
 
-/* SNS share modal */
-.share-modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0);
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  z-index: 100;
-  transition: background 0.25s ease-out;
+/* 保存後に画像の下へ表示するSNS共有ボタン（常設要素。保存前はhiddenで隠す） */
+.inline-share {
+  flex: none;
+  padding: 10px 16px 0;
 }
 
-/* [hidden]と.share-modal-overlayは詳細度が同じで、後勝ちでdisplay:flexが勝ってしまい
-   非表示のはずのモーダルが透明な全画面オーバーレイとして操作を塞いでいた。明示的に上書きする */
-.share-modal-overlay[hidden] {
-  display: none;
-}
-
-.share-modal-overlay.show {
-  background: rgba(0, 0, 0, 0.45);
-}
-
-.share-modal {
-  width: 100%;
-  max-width: 480px;
-  background: #fff;
-  border-radius: 24px 24px 0 0;
-  padding: 10px 20px calc(20px + env(safe-area-inset-bottom, 0px));
-  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.2);
-  transform: translateY(100%);
-  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.share-modal-overlay.show .share-modal {
-  transform: translateY(0);
-}
-
-.share-modal-handle {
-  width: 36px;
-  height: 4px;
-  border-radius: 100px;
-  background: rgba(0, 0, 0, 0.15);
-  margin: 4px auto 14px;
-}
-
-.share-modal-title {
-  margin: 0 0 4px;
-  font-size: 17px;
-  font-weight: 700;
-  text-align: center;
-  color: var(--text);
-}
-
-.share-modal-desc {
-  margin: 0 0 18px;
-  font-size: 13px;
+.inline-share-label {
+  font-size: 12px;
+  font-weight: 600;
   color: var(--text-dim);
   text-align: center;
+  margin: 0 0 10px;
 }
 
-.share-modal-buttons {
+.inline-share-buttons {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 14px;
+  justify-content: center;
+  gap: 14px;
 }
 
 .share-btn {
-  height: 50px;
+  width: 52px;
+  height: 52px;
   border: none;
-  border-radius: 14px;
-  font-size: 14.5px;
-  font-weight: 700;
-  font-family: inherit;
+  border-radius: 16px;
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
   cursor: pointer;
 }
 
@@ -419,16 +370,8 @@ body {
 }
 
 .share-btn-icon {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.22);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 800;
-  flex: none;
 }
 
 .share-btn-x {
@@ -445,21 +388,4 @@ body {
 
 .share-btn-instagram {
   background: linear-gradient(135deg, #feda75, #d62976, #4f5bd5);
-}
-
-.share-modal-close {
-  width: 100%;
-  height: 46px;
-  border: none;
-  background: #f7f6f4;
-  border-radius: 14px;
-  font-size: 14px;
-  font-weight: 700;
-  font-family: inherit;
-  color: var(--text-dim);
-  cursor: pointer;
-}
-
-.share-modal-close:active {
-  background: #efeeea;
 }
