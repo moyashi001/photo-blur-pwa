@@ -1,6 +1,6 @@
 // 写真を縮小して中央に配置し、余白をぼかして加工するアプリのロジック
 
-const APP_VERSION = '1.4.9';
+const APP_VERSION = '1.5.0';
 const APP_NAME = '写真ぼかしスタジオ';
 const FILE_PREFIX = 'photo-blur-studio';
 
@@ -8,7 +8,9 @@ const FILE_PREFIX = 'photo-blur-studio';
 // navigator.share()はfilesと同時にurlを渡すと多くのブラウザ(特にAndroid)で
 // urlが無視されタイトルしか表示されないため、textにアプリ名+URLをまとめて渡す
 const APP_SHARE_URL = 'https://photo-blur-pwa.vercel.app/';
-const SHARE_TEXT = `${APP_NAME}\n${APP_SHARE_URL}`;
+const SHARE_HASHTAGS = '#写真ぼかし #PhotoBlurPWA #画像加工';
+const SHARE_MESSAGE = `${APP_NAME} ${SHARE_HASHTAGS}`; // URLを含まない文言(X/LINEのtextパラメータ用)
+const SHARE_TEXT = `${SHARE_MESSAGE}\n${APP_SHARE_URL}`; // Web Share API/Instagramコピー用(URL込み)
 
 const ASPECTS = {
   '1:1': 1,
@@ -740,8 +742,8 @@ async function shareViaPlatform(platform) {
   }
 
   const platformUrls = {
-    x: `https://twitter.com/intent/tweet?text=${encodeURIComponent(APP_NAME)}&url=${encodeURIComponent(APP_SHARE_URL)}`,
-    line: `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(APP_SHARE_URL)}&text=${encodeURIComponent(APP_NAME)}`,
+    x: `https://twitter.com/intent/tweet?text=${encodeURIComponent(SHARE_MESSAGE)}&url=${encodeURIComponent(APP_SHARE_URL)}`,
+    line: `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(APP_SHARE_URL)}&text=${encodeURIComponent(SHARE_MESSAGE)}`,
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(APP_SHARE_URL)}`,
   };
   const url = platformUrls[platform];

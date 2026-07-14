@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://photo-blur-pwa.vercel.app/sitemap.xml
