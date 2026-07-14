@@ -1,6 +1,6 @@
 // 写真を縮小して中央に配置し、余白をぼかして加工するアプリのロジック
 
-const APP_VERSION = '1.4.5';
+const APP_VERSION = '1.4.6';
 const APP_NAME = '写真ぼかしスタジオ';
 const FILE_PREFIX = 'photo-blur-studio';
 
@@ -699,14 +699,6 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('service-worker.js').catch(() => {});
   });
-}
-
-// ---- AdSense広告の表示 ----
-// data-ad-client/data-ad-slotがプレースホルダーのままだと審査通過前はエラーになるため握りつぶす
-try {
-  (window.adsbygoogle = window.adsbygoogle || []).push({});
-} catch (err) {
-  // AdSense未設定・読み込み失敗時は広告なしで継続する
 }
 
 // 初期化

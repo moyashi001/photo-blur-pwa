@@ -1,10 +1,11 @@
 // 最低限のオフラインキャッシュを提供するサービスワーカー
 // 常に最新のファイルを優先し、オフライン時のみキャッシュにフォールバックする(network-first)
 
-const CACHE_NAME = 'photo-blur-studio-cache-v15';
+const CACHE_NAME = 'photo-blur-studio-cache-v16';
 const APP_SHELL = [
   './',
   './index.html',
+  './app.html',
   './manifest.json',
   './icons/icon-192.png',
   './icons/icon-512.png',

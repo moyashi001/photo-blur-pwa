@@ -1,9 +1,6 @@
 :root {
-  --accent: #3B6FE0;
-  --bg: #f1f0ec;
-  --text: #1a1a1a;
-  --text-dim: rgba(0, 0, 0, 0.55);
-  --border: rgba(0, 0, 0, 0.08);
+  --accent: #4A90E2;
+  --accent-dark: #357ABD;
 }
 
 * {
@@ -16,430 +13,430 @@ html, body {
 
 body {
   margin: 0;
-  background: var(--bg);
-  color: var(--text);
+  background: #fff;
+  color: #1a1a1a;
   font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", "Helvetica Neue", Arial, sans-serif;
-  -webkit-tap-highlight-color: transparent;
-  overscroll-behavior: none;
 }
 
-.app {
-  min-height: 100dvh;
-  max-width: 480px;
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--accent-dark);
+  text-decoration: underline;
+}
+
+.lp {
+  max-width: 430px;
   margin: 0 auto;
+  background: #fff;
+  overflow: hidden;
+}
+
+.lp-section {
+  padding: 48px 24px;
+}
+
+.section-title {
+  font-size: 20px;
+  font-weight: 800;
+  text-align: center;
+  margin: 0 0 24px;
+}
+
+/* CTAボタン（LPの見た目に合わせたリンクボタン） */
+.cta-btn {
+  display: block;
+  width: 100%;
+  max-width: 280px;
+  height: 54px;
+  line-height: 54px;
+  margin: 0 auto;
+  border: none;
+  border-radius: 16px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  text-align: center;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(74, 144, 226, 0.3);
+}
+
+.cta-btn:hover {
+  color: #fff;
+  text-decoration: none;
+  background: var(--accent-dark);
+}
+
+.hero-note {
+  font-size: 12px;
+  color: #999;
+  text-align: center;
+  margin: 14px 0 0;
+}
+
+/* 1. HERO */
+.hero {
+  padding: 56px 24px 40px;
+  background: #fff;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.phone-mock {
+  width: 220px;
+  height: 440px;
+  border-radius: 36px;
+  background: #111;
+  padding: 10px;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.16);
+  margin-bottom: 32px;
+  box-sizing: border-box;
+}
+
+.phone-mock-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 28px;
+  background: #fff;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.phone-mock-notch {
+  height: 20px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.phone-mock-notch-bar {
+  width: 60px;
+  height: 5px;
+  border-radius: 3px;
+  background: #ddd;
+}
+
+.phone-mock-screen {
+  flex: 1;
+  margin: 0 10px 10px;
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
+  background: #eee;
+}
+
+.phone-mock-bg {
+  position: absolute;
+  inset: -14px;
+  background: linear-gradient(160deg, #ff9a76, #ff4d6d);
+  filter: blur(16px);
+  transform: scale(1.1);
+}
+
+.phone-mock-photo-wrap {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.phone-mock-photo {
+  width: 60%;
+  aspect-ratio: 9 / 16;
+  border-radius: 10px;
+  background: linear-gradient(160deg, #ff9a76, #ff4d6d);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.4);
+}
+
+.hero-title {
+  font-size: 26px;
+  font-weight: 800;
+  margin: 0 0 10px;
+  letter-spacing: -0.01em;
+}
+
+.hero-sub {
+  font-size: 15px;
+  color: #555;
+  margin: 0 0 28px;
+  line-height: 1.6;
+}
+
+/* 2. FEATURES */
+.features {
+  background: #FAFAFA;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.feature-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.feature-icon {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: #EAF2FD;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+}
+
+.feature-body h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 6px;
+}
+
+.feature-body p {
+  font-size: 13.5px;
+  color: #666;
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* AdSense広告セクション（機能紹介の下に配置） */
+.ad-section {
+  padding: 24px 24px 0;
+  background: #FAFAFA;
+  display: flex;
+  justify-content: center;
+}
+
+/* 3. BEFORE / AFTER */
+.before-after {
   background: #fff;
 }
 
-/* Header */
-.header {
-  position: relative;
+.ba-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ba-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #999;
+  margin-bottom: 8px;
+  letter-spacing: 0.05em;
+}
+
+.ba-label-after {
+  color: var(--accent);
+}
+
+.ba-image {
+  aspect-ratio: 16 / 10;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.ba-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ba-note {
+  text-align: center;
+  font-size: 12px;
+  color: #999;
+  margin: 20px 0 0;
+}
+
+/* 4. HOW TO USE */
+.how-to-use {
+  background: #F0F7FF;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.how-to-use .section-title {
+  margin-bottom: 8px;
+}
+
+.step-card {
+  background: #fff;
+  border-radius: 18px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 4px 14px rgba(74, 144, 226, 0.08);
+}
+
+.step-num {
   flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.step-icon {
+  flex: none;
+  width: 40px;
   height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-bottom: 1px solid var(--border);
-  padding-top: env(safe-area-inset-top, 0);
-}
-
-.header-version {
-  position: absolute;
-  right: 16px;
-  font-size: 11px;
-  font-weight: 600;
-  color: rgba(0, 0, 0, 0.32);
-  font-variant-numeric: tabular-nums;
-}
-
-.header-title {
-  font-size: 17px;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-}
-
-/* Render mode bar (background blur / original image) */
-.render-mode-bar {
-  flex: none;
-  padding: 6px 16px 0;
-}
-
-/* Aspect ratio bar */
-.aspect-bar {
-  flex: none;
-  padding: 6px 16px 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.aspect-select {
-  flex: none;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text);
-  background: #f7f6f4;
-  border: 1.5px solid rgba(0, 0, 0, 0.12);
-  border-radius: 10px;
-  padding: 6px 10px;
-  font-family: inherit;
-}
-
-/* AdSense ad slot（固定サイズ320x50。auto+full-width-responsiveは高さが大きく広がることがあるため使わない） */
-.ad-slot {
-  flex: none;
-  height: 50px;
-  margin: 6px auto 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-
-/* Tool bar (mode toggle + brush size) */
-.tool-bar {
-  flex: none;
-  padding: 6px 16px 0;
-}
-
-.mode-toggle {
-  display: flex;
-  gap: 8px;
-  background: #f7f6f4;
-  border-radius: 12px;
-  padding: 4px;
-}
-
-.mode-btn {
-  flex: 1;
-  border: none;
-  background: transparent;
-  border-radius: 9px;
-  padding: 8px 6px;
-  font-size: 12.5px;
-  font-weight: 700;
-  font-family: inherit;
-  color: rgba(0, 0, 0, 0.45);
-  cursor: pointer;
-}
-
-.mode-btn.active {
-  background: #fff;
   color: var(--accent);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
 }
 
-.mode-btn:disabled {
-  opacity: 0.4;
-  cursor: default;
+.step-label {
+  font-size: 14.5px;
+  font-weight: 600;
 }
 
-.brush-options {
-  margin-top: 6px;
+/* 5. SNS SHARE */
+.sns-share {
+  background: #fff;
+  text-align: center;
 }
 
-.brush-type-toggle {
-  margin-bottom: 6px;
+.sns-title {
+  font-size: 18px;
+  margin: 0 0 6px;
 }
 
-/* Preview area */
-.preview-wrap {
-  flex: 1;
-  min-height: 0;
-  padding: 8px;
+.sns-badge {
+  font-size: 12px;
+  color: #999;
+  margin: 0 0 24px;
+  letter-spacing: 0.05em;
+}
+
+.sns-icons {
   display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.preview-frame {
-  position: relative;
-  border-radius: 20px;
-  overflow: hidden;
-  background: #f7f6f4;
-  border: 1.5px dashed rgba(0, 0, 0, 0.14);
-}
-
-.preview-frame.has-image {
-  border-style: solid;
-  border-color: transparent;
-}
-
-.preview-canvas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  display: none;
-  touch-action: none;
-}
-
-.preview-frame.has-image .preview-canvas {
-  display: block;
-}
-
-.placeholder {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   justify-content: center;
   gap: 14px;
-  color: rgba(0, 0, 0, 0.32);
 }
 
-.preview-frame.has-image .placeholder {
-  display: none;
+.sns-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: #F5F5F5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  position: relative;
 }
 
-.placeholder span {
+.sns-desc {
   font-size: 13px;
+  color: #666;
+  margin: 20px 0 0;
+  line-height: 1.6;
+}
+
+/* 6. USE CASES */
+.use-cases {
+  background: #FAFAFA;
+  display: flex;
+  flex-direction: column;
+}
+
+.use-cases .section-title {
+  margin-bottom: 24px;
+}
+
+.use-case-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #fff;
+  border-radius: 14px;
+  padding: 16px 18px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  font-size: 14px;
   font-weight: 500;
 }
 
-/* Toast */
-.toast {
-  position: absolute;
-  left: 50%;
-  bottom: 16px;
-  transform: translate(-50%, 8px);
-  background: rgba(20, 20, 20, 0.88);
-  color: #fff;
-  font-size: 13px;
-  font-weight: 600;
-  padding: 9px 18px;
-  border-radius: 100px;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+.use-case-item + .use-case-item {
+  margin-top: 14px;
 }
 
-.toast.show {
-  opacity: 1;
-  transform: translate(-50%, 0);
-}
-
-/* Options */
-.options {
-  flex: none;
-  padding: 2px 16px 6px;
-}
-
-.options-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 4px;
-}
-
-.options-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-dim);
-}
-
-.options-value {
-  font-size: 12px;
-  font-weight: 600;
-  color: rgba(0, 0, 0, 0.4);
-  font-variant-numeric: tabular-nums;
-}
-
-.blur-range {
-  width: 100%;
-  height: 20px;
-  accent-color: var(--accent);
-}
-
-/* Buttons */
-.button-area {
-  flex: none;
-  padding: 6px 16px calc(12px + env(safe-area-inset-bottom, 0px));
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  border-top: 1px solid var(--border);
-}
-
-.btn {
-  border: none;
-  border-radius: 14px;
-  font-size: 15px;
-  font-weight: 700;
-  font-family: inherit;
-  cursor: pointer;
-}
-
-.btn-primary {
-  height: 46px;
-  background: var(--accent);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.btn-primary:active {
-  opacity: 0.85;
-}
-
-.btn-row {
-  display: flex;
-  gap: 10px;
-}
-
-.btn-secondary {
-  flex: 1;
-  height: 42px;
-  border: 1.5px solid var(--accent);
-  background: #fff;
-  color: var(--accent);
-  font-size: 14px;
-}
-
-.btn-secondary:active:not(:disabled) {
-  background: rgba(59, 111, 224, 0.08);
-}
-
-.btn-secondary:disabled {
-  border-color: rgba(0, 0, 0, 0.12);
-  color: rgba(0, 0, 0, 0.28);
-  cursor: default;
-}
-
-/* SNS share modal */
-.share-modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0);
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  z-index: 100;
-  transition: background 0.25s ease-out;
-}
-
-/* [hidden]と.share-modal-overlayは詳細度が同じで、後勝ちでdisplay:flexが勝ってしまい
-   非表示のはずのモーダルが透明な全画面オーバーレイとして操作を塞いでいた。明示的に上書きする */
-.share-modal-overlay[hidden] {
-  display: none;
-}
-
-.share-modal-overlay.show {
-  background: rgba(0, 0, 0, 0.45);
-}
-
-.share-modal {
-  width: 100%;
-  max-width: 480px;
-  background: #fff;
-  border-radius: 24px 24px 0 0;
-  padding: 10px 20px calc(20px + env(safe-area-inset-bottom, 0px));
-  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.2);
-  transform: translateY(100%);
-  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.share-modal-overlay.show .share-modal {
-  transform: translateY(0);
-}
-
-.share-modal-handle {
-  width: 36px;
-  height: 4px;
-  border-radius: 100px;
-  background: rgba(0, 0, 0, 0.15);
-  margin: 4px auto 14px;
-}
-
-.share-modal-title {
-  margin: 0 0 4px;
-  font-size: 17px;
-  font-weight: 700;
-  text-align: center;
-  color: var(--text);
-}
-
-.share-modal-desc {
-  margin: 0 0 18px;
-  font-size: 13px;
-  color: var(--text-dim);
-  text-align: center;
-}
-
-.share-modal-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 14px;
-}
-
-.share-btn {
-  height: 50px;
-  border: none;
-  border-radius: 14px;
-  font-size: 14.5px;
-  font-weight: 700;
-  font-family: inherit;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  cursor: pointer;
-}
-
-.share-btn:active {
-  opacity: 0.85;
-}
-
-.share-btn-icon {
-  width: 26px;
-  height: 26px;
+.use-case-item .dot {
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.22);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  font-weight: 800;
+  background: var(--accent);
   flex: none;
 }
 
-.share-btn-x {
-  background: #000;
+/* 7. ROADMAP */
+.roadmap {
+  background: #fff;
 }
 
-.share-btn-line {
-  background: #06c755;
-}
-
-.share-btn-facebook {
-  background: #1877f2;
-}
-
-.share-btn-instagram {
-  background: linear-gradient(135deg, #feda75, #d62976, #4f5bd5);
-}
-
-.share-modal-close {
-  width: 100%;
-  height: 46px;
-  border: none;
-  background: #f7f6f4;
-  border-radius: 14px;
+.roadmap-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   font-size: 14px;
-  font-weight: 700;
-  font-family: inherit;
-  color: var(--text-dim);
-  cursor: pointer;
+  color: #333;
 }
 
-.share-modal-close:active {
-  background: #efeeea;
+.roadmap-item svg {
+  flex: none;
+}
+
+.roadmap-item + .roadmap-item {
+  margin-top: 12px;
+}
+
+/* 8. CTA (bottom) */
+.cta-bottom {
+  padding: 56px 24px;
+  background: #fff;
+  text-align: center;
+}
+
+/* 9. FOOTER */
+.lp-footer {
+  padding: 28px 24px 40px;
+  background: #FAFAFA;
+  text-align: center;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.lp-footer p {
+  font-size: 11.5px;
+  color: #aaa;
+  margin: 0 0 8px;
+}
+
+.lp-footer a {
+  font-size: 11.5px;
 }
